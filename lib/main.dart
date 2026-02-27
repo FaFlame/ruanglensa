@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'features/auth/presentation/login_page.dart';
+import 'features/auth/presentation/login_page_clean.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      home: const LoginPageClean(),
     );
   }
 }
