@@ -140,8 +140,12 @@ class _LoginPageCleanState extends State<LoginPageClean> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    // no extra screenHeight variable needed for fixed heights
 
     return Scaffold(
+      // Keep scaffold from resizing; we use AnimatedPadding with
+      // MediaQuery.viewInsets.bottom so the bottom sheet will move
+      // exactly up to the keyboard (stick to it) without jumping.
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -163,6 +167,9 @@ class _LoginPageCleanState extends State<LoginPageClean> {
               padding: EdgeInsets.only(bottom: bottomInset),
               child: Container(
                 width: double.infinity,
+                // restore original inner bottom padding so the sheet layout
+                // matches the earlier behavior (small overflow when keyboard
+                // appears). Checkbox color changes are preserved.
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -273,10 +280,14 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                         },
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
-                      SizedBox(
-                        height: 240,
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        // Revert to the earlier heights that produced the
+                        // small (4px) overflow and made the sheet appear to
+                        // stick to the keyboard: normal=220, keyboard=180.
+                        height: bottomInset > 0 ? 180 : 220,
                         child: PageView(
                           controller: _pageController,
                           onPageChanged: (i) => setState(() => _pageIndex = i),
@@ -290,7 +301,7 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                                   icon: Icons.person_outline,
                                   error: _loginUsernameError,
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 10),
                                 _buildTextField(
                                   controller: passwordController,
                                   hint: 'Password',
@@ -298,19 +309,41 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                                   obscure: true,
                                   error: _loginPasswordError,
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 10),
                                 Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Checkbox(
                                       value: _remember,
                                       tristate: false,
+                                      checkColor: Colors.white,
+                                      fillColor:
+                                          WidgetStateProperty.resolveWith<
+                                            Color?
+                                          >((states) {
+                                            if (states.contains(
+                                              WidgetState.selected,
+                                            ))
+                                              return const Color(0xFF011229);
+                                            return null;
+                                          }),
                                       onChanged: (v) => setState(
                                         () => _remember = v ?? false,
                                       ),
                                     ),
+                                    const SizedBox(width: 6),
                                     const Text('Remember me'),
                                     const Spacer(),
                                     TextButton(
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: const Size(0, 0),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        foregroundColor: const Color(
+                                          0xFF003A87,
+                                        ),
+                                      ),
                                       onPressed: () {},
                                       child: const Text('Forgot Password?'),
                                     ),
@@ -338,11 +371,22 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Checkbox(
                                       value: _regAccepted,
                                       tristate: false,
+                                      checkColor: Colors.white,
+                                      fillColor:
+                                          WidgetStateProperty.resolveWith<
+                                            Color?
+                                          >((states) {
+                                            if (states.contains(
+                                              WidgetState.selected,
+                                            ))
+                                              return const Color(0xFF011229);
+                                            return null;
+                                          }),
                                       onChanged: (v) => setState(
                                         () => _regAccepted = v ?? false,
                                       ),
@@ -352,7 +396,9 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                                       child: Text(
                                         'I acknowledge and accept the Terms and Conditions',
                                         style: TextStyle(
-                                          color: Colors.grey.shade500,
+                                          color: _regAccepted
+                                              ? const Color(0xFF011229)
+                                              : const Color(0xFFA7A9AD),
                                         ),
                                       ),
                                     ),
@@ -364,7 +410,7 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 6),
 
                       Builder(
                         builder: (context) {
