@@ -36,6 +36,16 @@ class _LoginPageCleanState extends State<LoginPageClean> {
     passwordController.addListener(_onLoginChanged);
   }
 
+  // Customizable hints so we can replace them when login fails
+  String _usernameHint = 'Username';
+  String _passwordHint = 'Password';
+
+  // Error colors requested by design
+  static const Color _errorBorderColor = Color(0xFFFF2C2C); // border & icon
+  static const Color _errorPlaceholderColor = Color(
+    0xFFEE6B6E,
+  ); // placeholder text
+
   void _onRegChanged() {
     if (mounted) {
       if (regNameController.text.trim().isNotEmpty) _regNameError = false;
@@ -48,8 +58,11 @@ class _LoginPageCleanState extends State<LoginPageClean> {
   void _onLoginChanged() {
     if (mounted) {
       if (emailController.text.trim().isNotEmpty) _loginUsernameError = false;
+      // if user starts typing again, restore default hint
+      if (emailController.text.trim().isNotEmpty) _usernameHint = 'Username';
       if (passwordController.text.trim().isNotEmpty)
         _loginPasswordError = false;
+      if (passwordController.text.trim().isNotEmpty) _passwordHint = 'Password';
       if (_loginError) _loginError = false;
       setState(() {});
     }
@@ -59,34 +72,86 @@ class _LoginPageCleanState extends State<LoginPageClean> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    // basic validation
-    _loginUsernameError = email.isEmpty;
-    _loginPasswordError = password.isEmpty;
-    if (_loginUsernameError || _loginPasswordError) {
+    final bool emailEmpty = email.isEmpty;
+    final bool passwordEmpty = password.isEmpty;
+
+    // If any field is empty, show specific 'Please enter ...' placeholders
+    if (emailEmpty || passwordEmpty) {
       _loginError = true;
+
+      if (emailEmpty) {
+        _loginUsernameError = true;
+        _usernameHint = 'Please enter your username';
+      } else {
+        _loginUsernameError = false;
+        _usernameHint = 'Username';
+      }
+
+      if (passwordEmpty) {
+        _loginPasswordError = true;
+        _passwordHint = 'Please enter your password';
+      } else {
+        _loginPasswordError = false;
+        _passwordHint = 'Password';
+      }
+
       setState(() {});
       return;
     }
 
-    if (email == "admin" && password == "123") {
+    // Both fields are non-empty -> check credentials
+    if (email == 'admin' && password == '123') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AdminPage()),
       );
-    } else if (email == "user" && password == "123") {
+      return;
+    }
+
+    if (email == 'user' && password == '123') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const UserPage()),
       );
-    } else {
-      _loginError = true;
+      return;
+    }
+
+    // Credentials invalid. Decide which side is incorrect.
+    _loginError = true;
+
+    final bool usernameMatchesAdmin = email == 'admin';
+    final bool usernameMatchesUser = email == 'user';
+    final bool usernameIsKnown = usernameMatchesAdmin || usernameMatchesUser;
+
+    if (usernameIsKnown && password != '123') {
+      // Username exists but password wrong
+      _loginUsernameError = false;
+      _loginPasswordError = true;
+      passwordController.clear();
+      _passwordHint = 'Incorrect Password';
+    } else if (!usernameIsKnown && password == '123') {
+      // Password correct but username unknown -> mark both fields red
       _loginUsernameError = true;
       _loginPasswordError = true;
-      setState(() {});
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Login gagal")));
+      // clear both so placeholders are visible
+      emailController.clear();
+      passwordController.clear();
+      _usernameHint = 'Incorrect Username';
+      _passwordHint = 'Incorrect Password';
+    } else {
+      // Both wrong
+      _loginUsernameError = true;
+      _loginPasswordError = true;
+      emailController.clear();
+      passwordController.clear();
+      _usernameHint = 'Incorrect Username';
+      _passwordHint = 'Incorrect Password';
     }
+
+    setState(() {});
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Login gagal')));
   }
 
   Widget _buildTextField({
@@ -96,14 +161,30 @@ class _LoginPageCleanState extends State<LoginPageClean> {
     bool obscure = false,
     bool error = false,
   }) {
+    // Determine effective error state from either the explicit flag or
+    // the hint text (which we set to 'Incorrect ...' / 'Please enter ...').
+    final hintLower = hint.toLowerCase();
+    final bool effectiveError =
+        error ||
+        hintLower.contains('incorrect') ||
+        hintLower.contains('please enter');
+
     return TextField(
       controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: error ? Colors.red : null),
+        hintStyle: TextStyle(
+          color: effectiveError ? _errorPlaceholderColor : null,
+          fontWeight: effectiveError ? FontWeight.w600 : null,
+        ),
         prefixIcon: icon != null
-            ? Icon(icon, color: error ? Colors.red : Colors.grey.shade600)
+            ? Icon(
+                icon,
+                color: effectiveError
+                    ? _errorBorderColor
+                    : Colors.grey.shade600,
+              )
             : null,
         filled: true,
         fillColor: Colors.grey.shade50,
@@ -114,13 +195,13 @@ class _LoginPageCleanState extends State<LoginPageClean> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
           borderSide: BorderSide(
-            color: error ? Colors.red : Colors.grey.shade300,
+            color: effectiveError ? _errorBorderColor : Colors.grey.shade300,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
           borderSide: BorderSide(
-            color: error ? Colors.red : Colors.grey.shade400,
+            color: effectiveError ? _errorBorderColor : Colors.grey.shade400,
           ),
         ),
       ),
@@ -160,7 +241,6 @@ class _LoginPageCleanState extends State<LoginPageClean> {
           //Positioned.fill(
           //child: Container(color: const Color.fromRGBO(0, 0, 0, 0.4)),
           //),
-
           Align(
             alignment: Alignment.bottomCenter,
             child: AnimatedPadding(
@@ -195,7 +275,7 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                             ),
                             child: Stack(
                               children: [
-                                AnimatedPositioned( 
+                                AnimatedPositioned(
                                   duration: const Duration(milliseconds: 250),
                                   left: _pageIndex == 0 ? 6 : segWidth / 2 + 6,
                                   top: 0,
@@ -298,14 +378,14 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                               children: [
                                 _buildTextField(
                                   controller: emailController,
-                                  hint: 'Username',
+                                  hint: _usernameHint,
                                   icon: Icons.person_outline,
                                   error: _loginUsernameError,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildTextField(
                                   controller: passwordController,
-                                  hint: 'Password',
+                                  hint: _passwordHint,
                                   icon: Icons.lock_outline,
                                   obscure: true,
                                   error: _loginPasswordError,
@@ -467,7 +547,7 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                                                 .trim()
                                                 .isEmpty)
                                               _regPasswordError = true;
-                                            if  (!_regAccepted) {
+                                            if (!_regAccepted) {
                                               ScaffoldMessenger.of(
                                                 context,
                                               ).showSnackBar(
