@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'features/auth/presentation/login_page_clean.dart';
+import 'features/onboarding/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,12 +14,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'RuangLensa App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginPageClean(),
+      home: const SplashScreen(),
     );
-  } 
+  }
 }

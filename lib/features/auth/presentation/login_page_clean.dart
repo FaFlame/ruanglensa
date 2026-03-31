@@ -156,9 +156,10 @@ class _LoginPageCleanState extends State<LoginPageClean> {
             ),
           ),
 
-          Positioned.fill(
-            child: Container(color: const Color.fromRGBO(0, 0, 0, 0.4)),
-          ),
+          // draft overlay bg
+          //Positioned.fill(
+          //child: Container(color: const Color.fromRGBO(0, 0, 0, 0.4)),
+          //),
 
           Align(
             alignment: Alignment.bottomCenter,
@@ -194,11 +195,11 @@ class _LoginPageCleanState extends State<LoginPageClean> {
                             ),
                             child: Stack(
                               children: [
-                                AnimatedPositioned(
+                                AnimatedPositioned( 
                                   duration: const Duration(milliseconds: 250),
                                   left: _pageIndex == 0 ? 6 : segWidth / 2 + 6,
-                                  top: 6,
-                                  bottom: 6,
+                                  top: 0,
+                                  bottom: 0,
                                   width: segWidth / 2 - 24,
                                   child: Container(
                                     decoration: BoxDecoration(
