@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'get_started_page.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,100 +10,220 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  int _stage = 0;
+    with TickerProviderStateMixin {
+  // Phase 1: Logo icon scale-in
+  late AnimationController _logoController;
+  late Animation<double> _logoScaleAnim;
+  late Animation<double> _logoOpacityAnim;
+
+  // Phase 2: Brand image slide-in from left
+  late AnimationController _brandController;
+  late Animation<double> _brandOpacityAnim;
+  late Animation<Offset> _brandSlideAnim;
+
+  // Phase 3: "Welcome" text slide-in from bottom
+  late AnimationController _welcomeController;
+  late Animation<double> _welcomeOpacityAnim;
+  late Animation<Offset> _welcomeSlideAnim;
+
+  // Phase 4: "Welcome" fade-out
+  late AnimationController _welcomeFadeOutController;
+  late Animation<double> _welcomeFadeOutAnim;
 
   @override
   void initState() {
     super.initState();
-    _runSequence();
+
+    // Phase 1
+    _logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _logoScaleAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.easeOutBack),
+    );
+    _logoOpacityAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.easeIn),
+    );
+
+    // Phase 2
+    _brandController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _brandOpacityAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _brandController, curve: Curves.easeIn),
+    );
+    _brandSlideAnim = Tween<Offset>(
+      begin: const Offset(-0.4, 0.0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _brandController, curve: Curves.easeOutCubic),
+    );
+
+    // Phase 3
+    _welcomeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _welcomeOpacityAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn),
+    );
+    _welcomeSlideAnim = Tween<Offset>(
+      begin: const Offset(0.0, 0.6),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _welcomeController, curve: Curves.easeOutCubic),
+    );
+
+    // Phase 4
+    _welcomeFadeOutController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _welcomeFadeOutAnim = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+          parent: _welcomeFadeOutController, curve: Curves.easeOut),
+    );
+
+    _runAnimationSequence();
   }
 
-  void _runSequence() async {
-    // show stage 0,1,2 then navigate to GetStarted with fade
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _stage = 1);
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _stage = 2);
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
+  Future<void> _runAnimationSequence() async {
+    // Phase 1 — logo icon appears
+    await Future.delayed(const Duration(milliseconds: 300));
+    await _logoController.forward();
 
-    // Navigate with fade transition so it looks like black fades away
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const GetStartedPage(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 700),
-      ),
-    );
+    // Phase 2 & 3 — brand image slide-in DAN "Welcome" slide-up BERSAMAAN
+    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.wait([
+      _brandController.forward(),
+      _welcomeController.forward(),
+    ]);
+
+    // Hold
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    // Phase 4 — "Welcome" fades out
+    await _welcomeFadeOutController.forward();
+
+    // Hold end splash, then navigate
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const GetStartedPage()),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _logoController.dispose();
+    _brandController.dispose();
+    _welcomeController.dispose();
+    _welcomeFadeOutController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // We'll show a full black background. The three stage visuals are
-    // implemented by changing alignment/size/text.
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
           children: [
-            // center content
-            AnimatedAlign(
-              duration: const Duration(milliseconds: 600),
-              alignment: _stage == 2
-                  ? const Alignment(0.0, 0.6)
-                  : Alignment.center,
-              curve: Curves.easeInOut,
+            Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 600),
-                    width: _stage == 0 ? 80 : (_stage == 1 ? 120 : 140),
-                    height: _stage == 0 ? 80 : (_stage == 1 ? 120 : 140),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.contain,
-                    ),
+                  // Logo row: icon + brand image — sejajar di tengah
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Camera icon (logo only)
+                      AnimatedBuilder(
+                        animation: _logoController,
+                        builder: (context, child) => Opacity(
+                          opacity: _logoOpacityAnim.value,
+                          child: Transform.scale(
+                            scale: _logoScaleAnim.value,
+                            child: child,
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/images/logononame.png',
+                          width: 64,
+                          height: 64,
+                          color: Colors.white,
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      // Brand image: "RUANG LENSA + Sewa mudah, Hasil mewah"
+                      ClipRect(
+                        child: AnimatedBuilder(
+                          animation: _brandController,
+                          builder: (context, child) => FractionalTranslation(
+                            translation: _brandSlideAnim.value,
+                            child: Opacity(
+                              opacity: _brandOpacityAnim.value,
+                              child: child,
+                            ),
+                          ),
+                          child: Image.asset(
+                            'assets/images/onlytextmid.png',
+                            height: 100,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 500),
-                    opacity: _stage >= 1 ? 1.0 : 0.0,
-                    child: _stage >= 1
-                        ? const Text(
-                            'Welcome',
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                          )
-                        : const SizedBox.shrink(),
+
+                  const SizedBox(height: 56),
+
+                  // "Welcome" text
+                  ClipRect(
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge(
+                          [_welcomeController, _welcomeFadeOutController]),
+                      builder: (context, child) {
+                        final isPhase4Running =
+                            _welcomeFadeOutController.status ==
+                                    AnimationStatus.forward ||
+                                _welcomeFadeOutController.status ==
+                                    AnimationStatus.completed;
+
+                        final opacity = isPhase4Running
+                            ? _welcomeFadeOutAnim.value
+                            : _welcomeOpacityAnim.value;
+
+                        return FractionalTranslation(
+                          translation: _welcomeSlideAnim.value,
+                          child: Opacity(
+                            opacity: opacity,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Welcome',
+                        style: GoogleFonts.notoSans(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-
-            // bottom-left logo in stage 2 (mimic third image placement)
-            if (_stage >= 2)
-              Positioned(
-                left: 24,
-                bottom: 40,
-                child: Opacity(
-                  opacity: 1.0,
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        width: 140,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),
