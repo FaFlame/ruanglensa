@@ -212,7 +212,8 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  Widget _penawaranCard(String assetName, String name, String price) {
+  // Satu widget card seragam untuk semua section produk
+  Widget _produkCard(String assetName, String name, String price) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -230,48 +231,6 @@ class _HomePage extends StatelessWidget {
         const SizedBox(height: 2),
         Text(price,
             style: const TextStyle(fontSize: 11, color: Colors.grey)),
-      ],
-    );
-  }
-
-  Widget _paketJasaCard(String assetName, String name, String price) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.asset(assetName,
-              width: double.infinity, height: 110, fit: BoxFit.cover),
-        ),
-        const SizedBox(height: 6),
-        Text(name,
-            style:
-                const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-        const SizedBox(height: 2),
-        Text(price,
-            style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      ],
-    );
-  }
-
-  Widget _productGrid3Card(String assetName, String name, String price) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.asset(assetName,
-              width: double.infinity, height: 80, fit: BoxFit.cover),
-        ),
-        const SizedBox(height: 6),
-        Text(name,
-            style:
-                const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-        const SizedBox(height: 2),
-        Text(price,
-            style: const TextStyle(fontSize: 10, color: Colors.grey)),
       ],
     );
   }
@@ -389,23 +348,23 @@ class _HomePage extends StatelessWidget {
               crossAxisSpacing: 10,
               childAspectRatio: 0.78,
               children: [
-                _penawaranCard('assets/images/produk1.png',
+                _produkCard('assets/images/produk1.png',
                     'Sony A6400', 'Rp. 429.000/7 hari'),
-                _penawaranCard('assets/images/produk2.png',
+                _produkCard('assets/images/produk2.png',
                     'Nikon D3400', 'Rp. 126.000/7 hari'),
-                _penawaranCard('assets/images/produk3.png',
+                _produkCard('assets/images/produk3.png',
                     'Paket Liburan', 'Rp. 429.000/paket'),
-                _penawaranCard('assets/images/produk4.png',
+                _produkCard('assets/images/produk4.png',
                     'Konten Kreator', 'Rp. 429.000/paket'),
-                _penawaranCard('assets/images/produk5.png',
+                _produkCard('assets/images/produk5.png',
                     'Lumix 0.25mm', 'Rp. 126.000/7 hari'),
-                _penawaranCard('assets/images/produk6.png',
+                _produkCard('assets/images/produk6.png',
                     'Samsung NX1', 'Rp. 100.000/7 hari'),
-                _penawaranCard('assets/images/produk7.png',
+                _produkCard('assets/images/produk7.png',
                     'Fujifilm X-T10', 'Rp. 143.000/7 hari'),
-                _penawaranCard('assets/images/produk8.png',
+                _produkCard('assets/images/produk8.png',
                     'Paket Travelling', 'Rp. 126.000/paket'),
-                _penawaranCard('assets/images/produk9.png',
+                _produkCard('assets/images/produk9.png',
                     'Canon 28-70mm', 'Rp. 429.000/7 hari'),
               ],
             ),
@@ -421,21 +380,31 @@ class _HomePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: GridView.count(
-              crossAxisCount: 2,
+              crossAxisCount: 3,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 14,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.1,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.78,
               children: [
-                _paketJasaCard('assets/images/paket1.png',
+                _produkCard('assets/images/paket1.png',
                     'Paket Travelling', 'Rp. 126.000/paket'),
-                _paketJasaCard('assets/images/paket2.png',
+                _produkCard('assets/images/paket2.png',
                     'Paket Pernikahan', 'Rp. 143.000/paket'),
-                _paketJasaCard('assets/images/paket3.png',
+                _produkCard('assets/images/paket3.png',
                     'Konten Kreator', 'Rp. 429.000/paket'),
-                _paketJasaCard('assets/images/paket4.png',
+                _produkCard('assets/images/paket4.png',
                     'Paket Wisuda', 'Rp. 126.000/paket'),
+                _produkCard('assets/images/paket5.png',
+                    'Event Besar', 'Rp. 999.000/paket'),
+                _produkCard('assets/images/paket6.png',
+                    'Paket Liburan', 'Rp. 429.000/paket'),
+                _produkCard('assets/images/paket4.png',
+                    'Paket Wisuda', 'Rp. 126.000/paket'),
+                _produkCard('assets/images/paket5.png',
+                    'Event Besar', 'Rp. 999.000/paket'),
+                _produkCard('assets/images/paket6.png',
+                    'Paket Liburan', 'Rp. 429.000/paket'),
               ],
             ),
           ),
@@ -457,17 +426,23 @@ class _HomePage extends StatelessWidget {
               crossAxisSpacing: 10,
               childAspectRatio: 0.78,
               children: [
-                _productGrid3Card('assets/images/kamera1.png',
+                _produkCard('assets/images/kamera1.png',
                     'Canon EOS 600D', 'Rp. 329/7 days'),
-                _productGrid3Card('assets/images/kamera2.png',
+                _produkCard('assets/images/kamera2.png',
                     'Nikon D3400', 'Rp. 126.000/7 days'),
-                _productGrid3Card('assets/images/kamera3.png',
+                _produkCard('assets/images/kamera3.png',
                     'Fujifilm X-T10', 'Rp. 143.000/7 days'),
-                _productGrid3Card('assets/images/kamera4.png',
+                _produkCard('assets/images/kamera4.png',
                     'Sony A9', 'Rp. 429.000/7 days'),
-                _productGrid3Card('assets/images/kamera5.png',
+                _produkCard('assets/images/kamera5.png',
                     'Lumix G7', 'Rp. 126.000/7 days'),
-                _productGrid3Card('assets/images/kamera6.png',
+                _produkCard('assets/images/kamera6.png',
+                    'Nikon D5600', 'Rp. 143.000/7 days'),
+                  _produkCard('assets/images/kamera4.png',
+                    'Sony A9', 'Rp. 429.000/7 days'),
+                _produkCard('assets/images/kamera5.png',
+                    'Lumix G7', 'Rp. 126.000/7 days'),
+                _produkCard('assets/images/kamera6.png',
                     'Nikon D5600', 'Rp. 143.000/7 days'),
               ],
             ),
@@ -490,17 +465,23 @@ class _HomePage extends StatelessWidget {
               crossAxisSpacing: 10,
               childAspectRatio: 0.78,
               children: [
-                _productGrid3Card('assets/images/lensa1.png',
+                _produkCard('assets/images/lensa1.png',
                     'Canon EF 24-105mm', 'Rp. 429.000/7 days'),
-                _productGrid3Card('assets/images/lensa2.png',
+                _produkCard('assets/images/lensa2.png',
                     'Lumix S 100mm', 'Rp. 126.000/7 days'),
-                _productGrid3Card('assets/images/lensa3.png',
+                _produkCard('assets/images/lensa3.png',
                     'Sony FE 24-70mm', 'Rp. 143.000/7 days'),
-                _productGrid3Card('assets/images/lensa4.png',
+                _produkCard('assets/images/lensa4.png',
                     'Canon 28-70mm', 'Rp. 429.000/7 days'),
-                _productGrid3Card('assets/images/lensa5.png',
+                _produkCard('assets/images/lensa5.png',
                     'Lumix 0.25mm', 'Rp. 126.000/7 days'),
-                _productGrid3Card('assets/images/lensa6.png',
+                _produkCard('assets/images/lensa6.png',
+                    'Sony APS-C Lenses', 'Rp. 143.000/7 days'),
+                 _produkCard('assets/images/lensa4.png',
+                    'Canon 28-70mm', 'Rp. 429.000/7 days'),
+                _produkCard('assets/images/lensa5.png',
+                    'Lumix 0.25mm', 'Rp. 126.000/7 days'),
+                _produkCard('assets/images/lensa6.png',
                     'Sony APS-C Lenses', 'Rp. 143.000/7 days'),
               ],
             ),
