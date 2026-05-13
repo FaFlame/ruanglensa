@@ -1,5 +1,11 @@
+// lib/pages/user_page.dart
+
 import 'package:flutter/material.dart';
 import 'dart:ui';
+
+import 'produk_model.dart';
+import 'produk_service.dart';
+import 'profile_page.dart'; // ganti: PenggunaPage()
 
 // Ganti import ini sesuai path page asli di project kamu
 // import 'status_sewa_page.dart';
@@ -15,22 +21,19 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage> {
   int _selectedIndex = 0;
 
-  // Ganti _PlaceholderPage(...) dengan page asli kamu
   late final List<Widget> _pages = [
     const _HomePage(),
-    const _PlaceholderPage('Status Sewa'),  // ganti: StatusSewaPage()
-    const _PlaceholderPage('Pengguna'),     // ganti: PenggunaPage()
+    const _PlaceholderPage('Status Sewa'), // ganti: StatusSewaPage()
+    const ProfilePage(), // ganti: PenggunaPage()
   ];
 
   static const List<String> _pageTitles = [
-    '',
-    'Status Sewa',
-    'Pengguna',
+    '', //beranda
+    '', //status sewa
+    '', // pengguna
   ];
 
-  void _onNavTap(int idx) {
-    setState(() => _selectedIndex = idx);
-  }
+  void _onNavTap(int idx) => setState(() => _selectedIndex = idx);
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +43,12 @@ class _UserPageState extends State<UserPage> {
       backgroundColor: const Color(0xFFF6F7FB),
       body: Stack(
         children: [
-          // ── Konten utama ─────────────────────────────────────────────
           SafeArea(
             bottom: false,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Logo + judul halaman aktif
+                // ── Logo + judul halaman ──────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
                   child: Column(
@@ -66,19 +68,14 @@ class _UserPageState extends State<UserPage> {
                     ],
                   ),
                 ),
-
-                // Halaman aktif
                 Expanded(
-                  child: IndexedStack(
-                    index: _selectedIndex,
-                    children: _pages,
-                  ),
+                  child: IndexedStack(index: _selectedIndex, children: _pages),
                 ),
               ],
             ),
           ),
 
-          // ── Floating bottom nav — pinned ke bawah layar, tengah ──────
+          // ── Floating bottom nav ───────────────────────────────────────
           Positioned(
             bottom: bottomPadding > 0 ? bottomPadding + 8 : 16,
             left: 0,
@@ -100,17 +97,17 @@ class _UserPageState extends State<UserPage> {
                       children: List.generate(3, (i) {
                         final isActive = i == _selectedIndex;
                         const items = [
+                          _NavItem(icon: Icons.home_rounded, label: 'Beranda'),
                           _NavItem(
-                              icon: Icons.home_rounded, label: 'Beranda'),
+                            icon: Icons.calendar_today_rounded,
+                            label: 'Status Sewa',
+                          ),
                           _NavItem(
-                              icon: Icons.calendar_today_rounded,
-                              label: 'Status Sewa'),
-                          _NavItem(
-                              icon: Icons.person_rounded,
-                              label: 'Pengguna'),
+                            icon: Icons.person_rounded,
+                            label: 'Pengguna',
+                          ),
                         ];
                         final item = items[i];
-
                         return GestureDetector(
                           onTap: () => _onNavTap(i),
                           behavior: HitTestBehavior.opaque,
@@ -118,7 +115,9 @@ class _UserPageState extends State<UserPage> {
                             duration: const Duration(milliseconds: 220),
                             curve: Curves.easeInOut,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             decoration: isActive
                                 ? BoxDecoration(
                                     color: Colors.white,
@@ -170,22 +169,319 @@ class _NavItem {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Halaman Beranda
+// Halaman Beranda — semua produk diambil dari ProdukService
 // ─────────────────────────────────────────────────────────────────────────────
-class _HomePage extends StatelessWidget {
+class _HomePage extends StatefulWidget {
   const _HomePage();
+
+  @override
+  State<_HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<_HomePage> {
+  final _service = ProdukService.instance;
+
+  late Future<List<Produk>> _penawaranFuture;
+  late Future<List<Paket>> _paketJasaFuture;
+  late Future<List<Produk>> _kameraFuture;
+  late Future<List<Produk>> _lensaFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    _penawaranFuture = _service.fetchPenawaranTerbaik();
+    _paketJasaFuture = _service.fetchPaketJasa();
+    _kameraFuture = _service.fetchKamera();
+    _lensaFuture = _service.fetchLensa();
+  }
+
+  // Tarik-untuk-refresh
+  Future<void> _onRefresh() async {
+    setState(() => _loadData());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Carousel ────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.asset(
+                  'assets/images/carousel.png',
+                  width: double.infinity,
+                  height: 180,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // ── Search bar ──────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.search, color: Colors.grey, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                isDense: true,
+                                border: InputBorder.none,
+                                hintText: 'Cari penyewaan foto & video',
+                                hintStyle: TextStyle(fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF021427),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Cari',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // ── Kategori ────────────────────────────────────────────────
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Kategori',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildCategory('Kamera', 'assets/images/kategorilogokamera.png'),
+                  _buildCategory('Lensa', 'assets/images/kategorilogolensa.png'),
+                  _buildCategory('Paket', 'assets/images/kategorilogopaket.png'),
+                  _buildCategory('Semua', 'assets/images/kategorilogosemua.png'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+
+            // ── Penawaran Terbaik ────────────────────────────────────────
+            _sectionWithGrid(
+              title: 'Penawaran Terbaik',
+              future: _penawaranFuture,
+            ),
+
+            // ── Paket Jasa ───────────────────────────────────────────────
+            _sectionWithPaketGrid(
+              title: 'Paket Jasa',
+              future: _paketJasaFuture,
+            ),
+
+            // ── Kamera ───────────────────────────────────────────────────
+            _sectionWithGrid(title: 'Kamera', future: _kameraFuture),
+
+            // ── Lensa ────────────────────────────────────────────────────
+            _sectionWithGrid(title: 'Lensa', future: _lensaFuture),
+
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Section Paket Jasa (pakai model Paket) ───────────────────────────────
+  Widget _sectionWithPaketGrid({
+    required String title,
+    required Future<List<Paket>> future,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _sectionHeader(title),
+        ),
+        const SizedBox(height: 12),
+        FutureBuilder<List<Paket>>(
+          future: future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildGridSkeleton();
+            }
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Gagal memuat data: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            }
+            final paketList = snapshot.data ?? [];
+            if (paketList.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Belum ada paket.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              );
+            }
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.count(
+                crossAxisCount: 3,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.78,
+                children: paketList.map((p) => _PaketCard(paket: p)).toList(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 22),
+      ],
+    );
+  }
+
+  // ── Section grid untuk Produk (Penawaran, Kamera, Lensa) ─────────────────
+  Widget _sectionWithGrid({
+    required String title,
+    required Future<List<Produk>> future,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _sectionHeader(title),
+        ),
+        const SizedBox(height: 12),
+        FutureBuilder<List<Produk>>(
+          future: future,
+          builder: (context, snapshot) {
+            // Loading state
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildGridSkeleton();
+            }
+            // Error state
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Gagal memuat data: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            }
+            // Data kosong
+            final produkList = snapshot.data ?? [];
+            if (produkList.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Belum ada produk.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              );
+            }
+            // Grid produk
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.count(
+                crossAxisCount: 3,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.78,
+                children: produkList
+                    .map((p) => _ProdukCard(produk: p))
+                    .toList(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 22),
+      ],
+    );
+  }
+
+  // Skeleton loading 6 kotak abu-abu saat data belum datang
+  Widget _buildGridSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.count(
+        crossAxisCount: 3,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 10,
+        childAspectRatio: 0.78,
+        children: List.generate(6, (_) => _SkeletonCard()),
+      ),
+    );
+  }
 
   Widget _sectionHeader(String title) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style:
-                const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+        ),
         Row(
           children: const [
-            Text('Lihat Semua',
-                style: TextStyle(fontSize: 13, color: Colors.black54)),
+            Text(
+              'Lihat Semua',
+              style: TextStyle(fontSize: 13, color: Colors.black54),
+            ),
             Icon(Icons.chevron_right, size: 18, color: Colors.black54),
           ],
         ),
@@ -193,300 +489,33 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCategory(String label, IconData icon) {
-    return Column(
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Icon(icon, size: 26, color: const Color(0xFF021427)),
-        ),
-        const SizedBox(height: 6),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
-    );
-  }
-
-  // Satu widget card seragam untuk semua section produk
-  Widget _produkCard(String assetName, String name, String price) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.asset(assetName,
-              width: double.infinity, height: 88, fit: BoxFit.cover),
-        ),
-        const SizedBox(height: 6),
-        Text(name,
-            style:
-                const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-        const SizedBox(height: 2),
-        Text(price,
-            style: const TextStyle(fontSize: 11, color: Colors.grey)),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      // padding bawah agar konten tidak tertutup floating nav
-      padding: const EdgeInsets.only(bottom: 100),
+  Widget _buildCategory(String label, String imageAsset) {
+    return Container(
+      width: 95,
+      height: 96,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ── Carousel ──────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Image.asset(
-                'assets/images/carousel.png',
-                width: double.infinity,
-                height: 180,
-                fit: BoxFit.cover,
-              ),
-            ),
+          Expanded(
+            child:
+            Image.asset(
+              imageAsset,
+              width: 38,
+              height: 38,
+              fit: BoxFit.contain),
           ),
-          const SizedBox(height: 14),
-
-          // ── Search bar ────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 44,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.search, color: Colors.grey, size: 20),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              isDense: true,
-                              border: InputBorder.none,
-                              hintText: 'Cari penyewaan foto & video',
-                              hintStyle: TextStyle(fontSize: 13),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  height: 44,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF021427),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Text('Cari',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600)),
-                  ),
-                ),
-              ],
-            ),
+          const SizedBox(height: 1),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 20),
-
-          // ── Kategori ──────────────────────────────────────────────────
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('Kategori',
-                style:
-                    TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildCategory('Kamera', Icons.photo_camera_outlined),
-                _buildCategory('Lensa', Icons.circle_outlined),
-                _buildCategory('Paket', Icons.inbox_outlined),
-                _buildCategory('Semua', Icons.grid_view_outlined),
-              ],
-            ),
-          ),
-          const SizedBox(height: 22),
-
-          // ── Penawaran Terbaik ─────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _sectionHeader('Penawaran Terbaik'),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.78,
-              children: [
-                _produkCard('assets/images/produk1.png',
-                    'Sony A6400', 'Rp. 429.000/7 hari'),
-                _produkCard('assets/images/produk2.png',
-                    'Nikon D3400', 'Rp. 126.000/7 hari'),
-                _produkCard('assets/images/produk3.png',
-                    'Paket Liburan', 'Rp. 429.000/paket'),
-                _produkCard('assets/images/produk4.png',
-                    'Konten Kreator', 'Rp. 429.000/paket'),
-                _produkCard('assets/images/produk5.png',
-                    'Lumix 0.25mm', 'Rp. 126.000/7 hari'),
-                _produkCard('assets/images/produk6.png',
-                    'Samsung NX1', 'Rp. 100.000/7 hari'),
-                _produkCard('assets/images/produk7.png',
-                    'Fujifilm X-T10', 'Rp. 143.000/7 hari'),
-                _produkCard('assets/images/produk8.png',
-                    'Paket Travelling', 'Rp. 126.000/paket'),
-                _produkCard('assets/images/produk9.png',
-                    'Canon 28-70mm', 'Rp. 429.000/7 hari'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 22),
-
-          // ── Paket Jasa ────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _sectionHeader('Paket Jasa'),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.78,
-              children: [
-                _produkCard('assets/images/paket1.png',
-                    'Paket Travelling', 'Rp. 126.000/paket'),
-                _produkCard('assets/images/paket2.png',
-                    'Paket Pernikahan', 'Rp. 143.000/paket'),
-                _produkCard('assets/images/paket3.png',
-                    'Konten Kreator', 'Rp. 429.000/paket'),
-                _produkCard('assets/images/paket4.png',
-                    'Paket Wisuda', 'Rp. 126.000/paket'),
-                _produkCard('assets/images/paket5.png',
-                    'Event Besar', 'Rp. 999.000/paket'),
-                _produkCard('assets/images/paket6.png',
-                    'Paket Liburan', 'Rp. 429.000/paket'),
-                _produkCard('assets/images/paket4.png',
-                    'Paket Wisuda', 'Rp. 126.000/paket'),
-                _produkCard('assets/images/paket5.png',
-                    'Event Besar', 'Rp. 999.000/paket'),
-                _produkCard('assets/images/paket6.png',
-                    'Paket Liburan', 'Rp. 429.000/paket'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 22),
-
-          // ── Kamera ───────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _sectionHeader('Kamera'),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.78,
-              children: [
-                _produkCard('assets/images/kamera1.png',
-                    'Canon EOS 600D', 'Rp. 329/7 days'),
-                _produkCard('assets/images/kamera2.png',
-                    'Nikon D3400', 'Rp. 126.000/7 days'),
-                _produkCard('assets/images/kamera3.png',
-                    'Fujifilm X-T10', 'Rp. 143.000/7 days'),
-                _produkCard('assets/images/kamera4.png',
-                    'Sony A9', 'Rp. 429.000/7 days'),
-                _produkCard('assets/images/kamera5.png',
-                    'Lumix G7', 'Rp. 126.000/7 days'),
-                _produkCard('assets/images/kamera6.png',
-                    'Nikon D5600', 'Rp. 143.000/7 days'),
-                  _produkCard('assets/images/kamera4.png',
-                    'Sony A9', 'Rp. 429.000/7 days'),
-                _produkCard('assets/images/kamera5.png',
-                    'Lumix G7', 'Rp. 126.000/7 days'),
-                _produkCard('assets/images/kamera6.png',
-                    'Nikon D5600', 'Rp. 143.000/7 days'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 22),
-
-          // ── Lensa ────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _sectionHeader('Lensa'),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.78,
-              children: [
-                _produkCard('assets/images/lensa1.png',
-                    'Canon EF 24-105mm', 'Rp. 429.000/7 days'),
-                _produkCard('assets/images/lensa2.png',
-                    'Lumix S 100mm', 'Rp. 126.000/7 days'),
-                _produkCard('assets/images/lensa3.png',
-                    'Sony FE 24-70mm', 'Rp. 143.000/7 days'),
-                _produkCard('assets/images/lensa4.png',
-                    'Canon 28-70mm', 'Rp. 429.000/7 days'),
-                _produkCard('assets/images/lensa5.png',
-                    'Lumix 0.25mm', 'Rp. 126.000/7 days'),
-                _produkCard('assets/images/lensa6.png',
-                    'Sony APS-C Lenses', 'Rp. 143.000/7 days'),
-                 _produkCard('assets/images/lensa4.png',
-                    'Canon 28-70mm', 'Rp. 429.000/7 days'),
-                _produkCard('assets/images/lensa5.png',
-                    'Lumix 0.25mm', 'Rp. 126.000/7 days'),
-                _produkCard('assets/images/lensa6.png',
-                    'Sony APS-C Lenses', 'Rp. 143.000/7 days'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
         ],
       ),
     );
@@ -494,7 +523,147 @@ class _HomePage extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Placeholder — ganti dengan page asli kamu
+// Card untuk koleksi "produk" (Kamera & Lensa)
+// ─────────────────────────────────────────────────────────────────────────────
+class _ProdukCard extends StatelessWidget {
+  final Produk produk;
+  const _ProdukCard({required this.produk});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: produk.imageUrl.isNotEmpty
+              ? Image.network(
+                  produk.imageUrl,
+                  width: double.infinity,
+                  height: 88,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (_, child, progress) =>
+                      progress == null ? child : _placeholder(),
+                  errorBuilder: (_, __, ___) => _placeholder(),
+                )
+              : _placeholder(),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          produk.namaProduk,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          produk.hargaFormatted,
+          style: const TextStyle(fontSize: 11, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget _placeholder() => Container(
+    width: double.infinity,
+    height: 88,
+    decoration: BoxDecoration(
+      color: Colors.grey.shade200,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: const Icon(
+      Icons.image_not_supported_outlined,
+      color: Colors.grey,
+      size: 28,
+    ),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card untuk koleksi "paket" (Paket Jasa)
+// ─────────────────────────────────────────────────────────────────────────────
+class _PaketCard extends StatelessWidget {
+  final Paket paket;
+  const _PaketCard({required this.paket});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: paket.imageUrl.isNotEmpty
+              ? Image.network(
+                  paket.imageUrl,
+                  width: double.infinity,
+                  height: 88,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (_, child, progress) =>
+                      progress == null ? child : _placeholder(),
+                  errorBuilder: (_, __, ___) => _placeholder(),
+                )
+              : _placeholder(),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          paket.namaPaket,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          paket.hargaFormatted,
+          style: const TextStyle(fontSize: 11, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget _placeholder() => Container(
+    width: double.infinity,
+    height: 88,
+    decoration: BoxDecoration(
+      color: Colors.grey.shade200,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: const Icon(
+      Icons.image_not_supported_outlined,
+      color: Colors.grey,
+      size: 28,
+    ),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skeleton card saat loading
+// ─────────────────────────────────────────────────────────────────────────────
+class _SkeletonCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          height: 88,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(height: 10, width: 80, color: Colors.grey.shade200),
+        const SizedBox(height: 4),
+        Container(height: 8, width: 60, color: Colors.grey.shade200),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Placeholder page
 // ─────────────────────────────────────────────────────────────────────────────
 class _PlaceholderPage extends StatelessWidget {
   final String title;
