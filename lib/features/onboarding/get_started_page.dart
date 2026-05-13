@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../auth/presentation/login_page_clean.dart';
+import '../auth/presentation/login_page.dart';
 
 class GetStartedPage extends StatefulWidget {
   const GetStartedPage({super.key});

@@ -174,9 +174,9 @@ class _LoginPageCleanState extends State<LoginPageClean> {
     }
   }
 
-   
+
   //  REGISTER  →  Firebase Auth  →  simpan ke Firestore
-   
+
   Future<void> register() async {
     final email = regEmailController.text.trim();
     final password = regPasswordController.text.trim();
@@ -283,9 +283,9 @@ class _LoginPageCleanState extends State<LoginPageClean> {
     }
   }
 
-   
+
   //  TEXT FIELD BUILDER
-   
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
