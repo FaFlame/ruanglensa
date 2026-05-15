@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UserInfoPage extends StatefulWidget {
   const UserInfoPage({super.key});
@@ -10,20 +13,20 @@ class UserInfoPage extends StatefulWidget {
 }
 
 class _UserInfoPageState extends State<UserInfoPage> {
-  final _namaCtrl      = TextEditingController();
-  final _usernameCtrl  = TextEditingController();
-  final _passwordCtrl  = TextEditingController();
-  final _bioCtrl       = TextEditingController();
-  final _noTelpCtrl    = TextEditingController();
-  final _emailCtrl     = TextEditingController();
-  final _alamatCtrl    = TextEditingController();
+  final _namaCtrl     = TextEditingController();
+  final _usernameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _bioCtrl      = TextEditingController();
+  final _noTelpCtrl   = TextEditingController();
+  final _emailCtrl    = TextEditingController();
+  final _alamatCtrl   = TextEditingController();
 
   bool _isLoading   = true;
   bool _isSaving    = false;
   bool _obscurePass = true;
 
   DateTime? _tglLahir;
-  String _fotoProfil = '';
+  String _fotoProfil = ''; // base64 string atau kosong
 
   @override
   void initState() {
@@ -32,15 +35,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   Future<void> _loadData() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
     final doc = await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(user.uid)
         .get();
-
-    print('user info data: ${doc.data()}');
 
     final data = doc.data() ?? {};
     setState(() {
@@ -56,24 +57,86 @@ class _UserInfoPageState extends State<UserInfoPage> {
       if (tgl != null && tgl is Timestamp) {
         _tglLahir = tgl.toDate();
       }
-
       _isLoading = false;
     });
   }
 
-  Future<void> _pickTglLahir() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _tglLahir ?? DateTime(2000),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      initialEntryMode: DatePickerEntryMode.calendarOnly,
+  // ─────────────────────────────────────────────
+  //  FOTO PROFIL — pick & convert to Base64
+  // ─────────────────────────────────────────────
+  Future<void> _pickFoto() async {
+    final picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 70, // compress supaya tidak terlalu besar
     );
-    if (picked != null) {
-      setState(() => _tglLahir = picked);
+
+    if (picked == null) return;
+
+    final Uint8List bytes = await picked.readAsBytes();
+    final String base64Str = base64Encode(bytes);
+    final String dataUrl = 'data:image/jpeg;base64,$base64Str';
+
+    // Simpan langsung ke Firestore
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .update({
+        'foto_profil': dataUrl,
+        'updated_at' : FieldValue.serverTimestamp(),
+      });
+      setState(() => _fotoProfil = dataUrl);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Foto profil berhasil diperbarui')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal upload foto: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
+  Future<void> _hapusFoto() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .update({'foto_profil': '', 'updated_at': FieldValue.serverTimestamp()});
+    setState(() => _fotoProfil = '');
+  }
+
+  // ─────────────────────────────────────────────
+  //  Build avatar — support Base64 & NetworkImage
+  // ─────────────────────────────────────────────
+  ImageProvider? _getImageProvider() {
+    if (_fotoProfil.isEmpty) return null;
+    if (_fotoProfil.startsWith('data:image')) {
+      // Base64
+      final base64Str = _fotoProfil.split(',').last;
+      return MemoryImage(base64Decode(base64Str));
+    }
+    // URL biasa
+    return NetworkImage(_fotoProfil);
+  }
+
+  // ─────────────────────────────────────────────
+  //  SAVE DATA
+  // ─────────────────────────────────────────────
   Future<void> _saveData() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
@@ -122,6 +185,17 @@ class _UserInfoPageState extends State<UserInfoPage> {
     }
   }
 
+  Future<void> _pickTglLahir() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _tglLahir ?? DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+    );
+    if (picked != null) setState(() => _tglLahir = picked);
+  }
+
   String _formatTgl(DateTime? dt) {
     if (dt == null) return '';
     return '${dt.day.toString().padLeft(2, '0')}-'
@@ -134,7 +208,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
     required TextEditingController controller,
     bool obscure = false,
     Widget? suffixIcon,
-    VoidCallback? onTap,
     bool readOnly = false,
     TextInputType? keyboardType,
   }) {
@@ -147,7 +220,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
           controller: controller,
           obscureText: obscure,
           readOnly: readOnly,
-          onTap: onTap,
           keyboardType: keyboardType,
           decoration: InputDecoration(
             isDense: true,
@@ -180,6 +252,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
       );
     }
 
+    final imageProvider = _getImageProvider();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
@@ -197,25 +271,44 @@ class _UserInfoPageState extends State<UserInfoPage> {
             // ── Foto Profil ──
             Row(
               children: [
-                CircleAvatar(
-                  radius: 38,
-                  backgroundColor: Colors.grey.shade300,
-                  backgroundImage: _fotoProfil.isNotEmpty
-                      ? NetworkImage(_fotoProfil)
-                      : null,
-                  child: _fotoProfil.isEmpty
-                      ? const Icon(Icons.person,
-                          size: 38, color: Colors.white)
-                      : null,
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 38,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage: imageProvider,
+                      child: imageProvider == null
+                          ? const Icon(Icons.person,
+                              size: 38, color: Colors.white)
+                          : null,
+                    ),
+                    if (_isSaving)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black38,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextButton(
-                      onPressed: () {
-                        // TODO: implementasi upload foto profil
-                      },
+                      onPressed: _isSaving ? null : _pickFoto,
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(0, 0),
@@ -225,16 +318,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
                           style: TextStyle(fontSize: 13)),
                     ),
                     TextButton(
-                      onPressed: () async {
-                        final uid =
-                            FirebaseAuth.instance.currentUser?.uid;
-                        if (uid == null) return;
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(uid)
-                            .update({'foto_profil': ''});
-                        setState(() => _fotoProfil = '');
-                      },
+                      onPressed: _isSaving || _fotoProfil.isEmpty
+                          ? null
+                          : _hapusFoto,
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(0, 0),
@@ -262,8 +348,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 children: [
                   _buildField(label: 'Nama', controller: _namaCtrl),
                   const SizedBox(height: 14),
-                  _buildField(
-                      label: 'Username', controller: _usernameCtrl),
+                  _buildField(label: 'Username', controller: _usernameCtrl),
                   const SizedBox(height: 14),
                   _buildField(
                     label: 'Password',
@@ -289,7 +374,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   _buildField(
                     label: 'Email',
                     controller: _emailCtrl,
-                    readOnly: true, // email tidak bisa diubah langsung
+                    readOnly: true,
                   ),
                   const SizedBox(height: 14),
                   _buildField(label: 'Alamat', controller: _alamatCtrl),
@@ -314,8 +399,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                               contentPadding:
                                   EdgeInsets.symmetric(vertical: 8),
                               border: UnderlineInputBorder(),
-                              suffixIcon: Icon(Icons.calendar_today,
-                                  size: 18),
+                              suffixIcon:
+                                  Icon(Icons.calendar_today, size: 18),
                             ),
                           ),
                         ),

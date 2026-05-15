@@ -57,7 +57,9 @@ class _UserPageState extends State<UserPage> {
                         Text(
                           _pageTitles[_selectedIndex],
                           style: const TextStyle(
-                              fontSize: 13, color: Colors.black54),
+                            fontSize: 13,
+                            color: Colors.black54,
+                          ),
                         ),
                       ],
                     ],
@@ -278,10 +280,10 @@ class _HomePageState extends State<_HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildCategory('Kamera', Icons.photo_camera_outlined),
-                  _buildCategory('Lensa', Icons.circle_outlined),
-                  _buildCategory('Paket', Icons.inbox_outlined),
-                  _buildCategory('Semua', Icons.grid_view_outlined),
+                  _buildCategory('Kamera', 'assets/images/kategorilogokamera.png'),
+                  _buildCategory('Lensa', 'assets/images/kategorilogolensa.png'),
+                  _buildCategory('Paket', 'assets/images/kategorilogopaket.png'),
+                  _buildCategory('Semua', 'assets/images/kategorilogosemua.png'),
                 ],
               ),
             ),
@@ -464,22 +466,35 @@ class _HomePageState extends State<_HomePage> {
     );
   }
 
-  Widget _buildCategory(String label, IconData icon) {
-    return Column(
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
+  Widget _buildCategory(String label, String imageAsset) {
+    return Container(
+      width: 95,
+      height: 96,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child:
+            Image.asset(
+              imageAsset,
+              width: 38,
+              height: 38,
+              fit: BoxFit.contain),
           ),
-          child: Icon(icon, size: 26, color: const Color(0xFF021427)),
-        ),
-        const SizedBox(height: 6),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
+          const SizedBox(height: 1),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 }
