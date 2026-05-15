@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:ruanglensa/features/user/presentation/profile_page.dart';
 import 'dart:ui';
 
 import 'produk_model.dart';
@@ -22,13 +23,17 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage> {
   int _selectedIndex = 0;
 
-  late final List<Widget> _pages = [
+   late final List<Widget> _pages = [
     const _HomePage(),
-    const _PlaceholderPage('Status Sewa'),  // ganti: StatusSewaPage()
-    const _PlaceholderPage('Pengguna'),     // ganti: PenggunaPage()
+    const _PlaceholderPage('Status Sewa'), // ganti: StatusSewaPage()
+    const ProfilePage(), // ganti: PenggunaPage()
   ];
 
-  static const List<String> _pageTitles = ['', 'Status Sewa', 'Pengguna'];
+  static const List<String> _pageTitles = [
+    '', //beranda
+     '', //status sewa
+      '' //pengguna
+      ];
 
   void _onNavTap(int idx) => setState(() => _selectedIndex = idx);
 
@@ -46,30 +51,13 @@ class _UserPageState extends State<UserPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Logo + judul halaman ──────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset('assets/images/logo.png', width: 120),
-                      if (_pageTitles[_selectedIndex].isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          _pageTitles[_selectedIndex],
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ],
+                if (_selectedIndex == 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                    child: Image.asset('assets/images/logo.png', width: 120),
                   ),
-                ),
                 Expanded(
-                  child: IndexedStack(
-                    index: _selectedIndex,
-                    children: _pages,
-                  ),
+                  child: IndexedStack(index: _selectedIndex, children: _pages),
                 ),
               ],
             ),
