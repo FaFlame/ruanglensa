@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:ruanglensa/features/user/presentation/profile_page.dart';
+import 'package:ruanglensa/features/user/presentation/search_page.dart';
 import 'dart:ui';
 
 import 'produk_model.dart';
@@ -70,7 +71,7 @@ class _UserPageState extends State<UserPage> {
             right: 0,
             child: Center(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(10),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                   child: Container(
@@ -78,7 +79,7 @@ class _UserPageState extends State<UserPage> {
                     height: 69,
                     decoration: BoxDecoration(
                       color: const Color(0xFF1C1C1E).withOpacity(0.75),
-                      borderRadius: BorderRadius.circular(40),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -97,11 +98,11 @@ class _UserPageState extends State<UserPage> {
                             duration: const Duration(milliseconds: 220),
                             curve: Curves.easeInOut,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                                horizontal: 36, vertical: 8),
                             decoration: isActive
                                 ? BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(28),
+                                    borderRadius: BorderRadius.circular(10),
                                   )
                                 : null,
                             child: Column(
@@ -203,56 +204,71 @@ class _HomePageState extends State<_HomePage> {
             ),
             const SizedBox(height: 14),
 
-            // ── Search bar ──────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+   // ── Search bar ──────────────────────────────────────────────
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16),
+  child: Container(
+    height: 44,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Colors.grey.shade300),
+    ),
+    child: Row(
+      children: [
+        // Search bar
+        Expanded(
+          child: GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SearchPage()),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
-                children: [
+                children: const [
+                  Icon(Icons.search, color: Colors.grey, size: 20),
+                  SizedBox(width: 8),
                   Expanded(
-                    child: Container(
-                      height: 44,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.search, color: Colors.grey, size: 20),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                isDense: true,
-                                border: InputBorder.none,
-                                hintText: 'Cari penyewaan foto & video',
-                                hintStyle: TextStyle(fontSize: 13),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    height: 44,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF021427),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Center(
-                      child: Text('Cari',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Cari penyewaan foto & video',
+                      style: TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                   ),
                 ],
               ),
             ),
+          ),
+        ),
+
+        // Tombol Cari
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SearchPage()),
+          ),
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 25),
+            decoration: BoxDecoration(
+              color: const Color(0xFF021427),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+              child: Text(
+                'Cari',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  ),
+                 ),
+               ),
+             ),
+           ),
+         ],
+       ),
+     ),
+   ),
             const SizedBox(height: 20),
 
             // ── Kategori ────────────────────────────────────────────────
