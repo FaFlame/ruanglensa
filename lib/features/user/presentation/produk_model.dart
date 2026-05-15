@@ -1,5 +1,6 @@
 // lib/models/produk_model.dart
 
+
 class Produk {
   final String id;
   final String namaProduk;
@@ -9,7 +10,7 @@ class Produk {
   final String deskripsiProduk;
   final int kondisiProduk;    // 0-100
   final String statusProduk;  // "Tersedia" | "Tidak Tersedia"
-  final String imageUrl;      // tambahkan field ini di Firestore
+  final String gambarProduk; // Base64 string, field: gambar_produk di Firestore
 
   const Produk({
     required this.id,
@@ -20,7 +21,7 @@ class Produk {
     required this.deskripsiProduk,
     required this.kondisiProduk,
     required this.statusProduk,
-    required this.imageUrl,
+    required this.gambarProduk,
   });
 
   factory Produk.fromFirestore(Map<String, dynamic> data, String docId) {
@@ -33,7 +34,7 @@ class Produk {
       deskripsiProduk: data['deskripsi_produk'] ?? '',
       kondisiProduk: (data['kondisi_produk'] ?? 0).toInt(),
       statusProduk: data['status_produk'] ?? '',
-      imageUrl: data['imageUrl'] ?? '',
+      gambarProduk: data['gambar_produk'] ?? '',
     );
   }
 
@@ -54,7 +55,7 @@ class Paket {
   final String kategoriPaket; // "Paket Jasa"
   final String deskripsiPaket;
   final String statusPaket;   // "Tersedia" | "Tidak Tersedia"
-  final String imageUrl;      // tambahkan field ini di Firestore
+  final String gambarPaket;   // Base64 string, field: gambar_paket di Firestore
 
   const Paket({
     required this.id,
@@ -63,7 +64,7 @@ class Paket {
     required this.kategoriPaket,
     required this.deskripsiPaket,
     required this.statusPaket,
-    required this.imageUrl,
+    required this.gambarPaket,
   });
 
   factory Paket.fromFirestore(Map<String, dynamic> data, String docId) {
@@ -74,7 +75,7 @@ class Paket {
       kategoriPaket: data['kategori_paket'] ?? '',
       deskripsiPaket: data['deskripsi_paket'] ?? '',
       statusPaket: data['status_paket'] ?? '',
-      imageUrl: data['imageUrl'] ?? '',
+      gambarPaket: data['gambar_paket'] ?? '',
     );
   }
 

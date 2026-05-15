@@ -1,11 +1,12 @@
 // lib/pages/user_page.dart
 
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
 import 'produk_model.dart';
 import 'produk_service.dart';
-import 'profile_page.dart'; // ganti: PenggunaPage()
 
 // Ganti import ini sesuai path page asli di project kamu
 // import 'status_sewa_page.dart';
@@ -23,15 +24,11 @@ class _UserPageState extends State<UserPage> {
 
   late final List<Widget> _pages = [
     const _HomePage(),
-    const _PlaceholderPage('Status Sewa'), // ganti: StatusSewaPage()
-    const ProfilePage(), // ganti: PenggunaPage()
+    const _PlaceholderPage('Status Sewa'),  // ganti: StatusSewaPage()
+    const _PlaceholderPage('Pengguna'),     // ganti: PenggunaPage()
   ];
 
-  static const List<String> _pageTitles = [
-    '', //beranda
-    '', //status sewa
-    '', // pengguna
-  ];
+  static const List<String> _pageTitles = ['', 'Status Sewa', 'Pengguna'];
 
   void _onNavTap(int idx) => setState(() => _selectedIndex = idx);
 
@@ -60,16 +57,17 @@ class _UserPageState extends State<UserPage> {
                         Text(
                           _pageTitles[_selectedIndex],
                           style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
+                              fontSize: 13, color: Colors.black54),
                         ),
                       ],
                     ],
                   ),
                 ),
                 Expanded(
-                  child: IndexedStack(index: _selectedIndex, children: _pages),
+                  child: IndexedStack(
+                    index: _selectedIndex,
+                    children: _pages,
+                  ),
                 ),
               ],
             ),
@@ -98,14 +96,8 @@ class _UserPageState extends State<UserPage> {
                         final isActive = i == _selectedIndex;
                         const items = [
                           _NavItem(icon: Icons.home_rounded, label: 'Beranda'),
-                          _NavItem(
-                            icon: Icons.calendar_today_rounded,
-                            label: 'Status Sewa',
-                          ),
-                          _NavItem(
-                            icon: Icons.person_rounded,
-                            label: 'Pengguna',
-                          ),
+                          _NavItem(icon: Icons.calendar_today_rounded, label: 'Status Sewa'),
+                          _NavItem(icon: Icons.person_rounded, label: 'Pengguna'),
                         ];
                         final item = items[i];
                         return GestureDetector(
@@ -115,9 +107,7 @@ class _UserPageState extends State<UserPage> {
                             duration: const Duration(milliseconds: 220),
                             curve: Curves.easeInOut,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
+                                horizontal: 16, vertical: 8),
                             decoration: isActive
                                 ? BoxDecoration(
                                     color: Colors.white,
@@ -127,23 +117,17 @@ class _UserPageState extends State<UserPage> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  item.icon,
-                                  size: 22,
-                                  color: isActive
-                                      ? const Color(0xFF1C1C1E)
-                                      : Colors.white,
-                                ),
+                                Icon(item.icon, size: 22,
+                                    color: isActive
+                                        ? const Color(0xFF1C1C1E)
+                                        : Colors.white),
                                 if (isActive) ...[
                                   const SizedBox(height: 3),
-                                  Text(
-                                    item.label,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1C1C1E),
-                                    ),
-                                  ),
+                                  Text(item.label,
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF1C1C1E))),
                                 ],
                               ],
                             ),
@@ -182,7 +166,7 @@ class _HomePageState extends State<_HomePage> {
   final _service = ProdukService.instance;
 
   late Future<List<Produk>> _penawaranFuture;
-  late Future<List<Paket>> _paketJasaFuture;
+  late Future<List<Paket>>  _paketJasaFuture;
   late Future<List<Produk>> _kameraFuture;
   late Future<List<Produk>> _lensaFuture;
 
@@ -195,8 +179,8 @@ class _HomePageState extends State<_HomePage> {
   void _loadData() {
     _penawaranFuture = _service.fetchPenawaranTerbaik();
     _paketJasaFuture = _service.fetchPaketJasa();
-    _kameraFuture = _service.fetchKamera();
-    _lensaFuture = _service.fetchLensa();
+    _kameraFuture    = _service.fetchKamera();
+    _lensaFuture     = _service.fetchLensa();
   }
 
   // Tarik-untuk-refresh
@@ -270,13 +254,10 @@ class _HomePageState extends State<_HomePage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Center(
-                      child: Text(
-                        'Cari',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: Text('Cari',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],
@@ -287,21 +268,20 @@ class _HomePageState extends State<_HomePage> {
             // ── Kategori ────────────────────────────────────────────────
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Kategori',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
+              child: Text('Kategori',
+                  style:
+                      TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildCategory('Kamera', 'assets/images/kategorilogokamera.png'),
-                  _buildCategory('Lensa', 'assets/images/kategorilogolensa.png'),
-                  _buildCategory('Paket', 'assets/images/kategorilogopaket.png'),
-                  _buildCategory('Semua', 'assets/images/kategorilogosemua.png'),
+                  _buildCategory('Kamera', Icons.photo_camera_outlined),
+                  _buildCategory('Lensa', Icons.circle_outlined),
+                  _buildCategory('Paket', Icons.inbox_outlined),
+                  _buildCategory('Semua', Icons.grid_view_outlined),
                 ],
               ),
             ),
@@ -320,10 +300,16 @@ class _HomePageState extends State<_HomePage> {
             ),
 
             // ── Kamera ───────────────────────────────────────────────────
-            _sectionWithGrid(title: 'Kamera', future: _kameraFuture),
+            _sectionWithGrid(
+              title: 'Kamera',
+              future: _kameraFuture,
+            ),
 
             // ── Lensa ────────────────────────────────────────────────────
-            _sectionWithGrid(title: 'Lensa', future: _lensaFuture),
+            _sectionWithGrid(
+              title: 'Lensa',
+              future: _lensaFuture,
+            ),
 
             const SizedBox(height: 24),
           ],
@@ -354,20 +340,16 @@ class _HomePageState extends State<_HomePage> {
             if (snapshot.hasError) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Gagal memuat data: ${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
+                child: Text('Gagal memuat data: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red)),
               );
             }
             final paketList = snapshot.data ?? [];
             if (paketList.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Belum ada paket.',
-                  style: TextStyle(color: Colors.grey),
-                ),
+                child: Text('Belum ada paket.',
+                    style: TextStyle(color: Colors.grey)),
               );
             }
             return Padding(
@@ -413,10 +395,8 @@ class _HomePageState extends State<_HomePage> {
             if (snapshot.hasError) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Gagal memuat data: ${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
+                child: Text('Gagal memuat data: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red)),
               );
             }
             // Data kosong
@@ -424,10 +404,8 @@ class _HomePageState extends State<_HomePage> {
             if (produkList.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Belum ada produk.',
-                  style: TextStyle(color: Colors.grey),
-                ),
+                child: Text('Belum ada produk.',
+                    style: TextStyle(color: Colors.grey)),
               );
             }
             // Grid produk
@@ -472,16 +450,13 @@ class _HomePageState extends State<_HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-        ),
+        Text(title,
+            style:
+                const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         Row(
           children: const [
-            Text(
-              'Lihat Semua',
-              style: TextStyle(fontSize: 13, color: Colors.black54),
-            ),
+            Text('Lihat Semua',
+                style: TextStyle(fontSize: 13, color: Colors.black54)),
             Icon(Icons.chevron_right, size: 18, color: Colors.black54),
           ],
         ),
@@ -489,35 +464,22 @@ class _HomePageState extends State<_HomePage> {
     );
   }
 
-  Widget _buildCategory(String label, String imageAsset) {
-    return Container(
-      width: 95,
-      height: 96,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child:
-            Image.asset(
-              imageAsset,
-              width: 38,
-              height: 38,
-              fit: BoxFit.contain),
+  Widget _buildCategory(String label, IconData icon) {
+    return Column(
+      children: [
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          const SizedBox(height: 1),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+          child: Icon(icon, size: 26, color: const Color(0xFF021427)),
+        ),
+        const SizedBox(height: 6),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
     );
   }
 }
@@ -531,19 +493,22 @@ class _ProdukCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Uint8List? imageBytes;
+    if (produk.gambarProduk.isNotEmpty) {
+      imageBytes = base64Decode(produk.gambarProduk);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: produk.imageUrl.isNotEmpty
-              ? Image.network(
-                  produk.imageUrl,
+          child: imageBytes != null
+              ? Image.memory(
+                  imageBytes,
                   width: double.infinity,
                   height: 88,
                   fit: BoxFit.cover,
-                  loadingBuilder: (_, child, progress) =>
-                      progress == null ? child : _placeholder(),
                   errorBuilder: (_, __, ___) => _placeholder(),
                 )
               : _placeholder(),
@@ -565,18 +530,15 @@ class _ProdukCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    width: double.infinity,
-    height: 88,
-    decoration: BoxDecoration(
-      color: Colors.grey.shade200,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: const Icon(
-      Icons.image_not_supported_outlined,
-      color: Colors.grey,
-      size: 28,
-    ),
-  );
+        width: double.infinity,
+        height: 88,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(Icons.image_not_supported_outlined,
+            color: Colors.grey, size: 28),
+      );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -588,19 +550,22 @@ class _PaketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Uint8List? imageBytes;
+    if (paket.gambarPaket.isNotEmpty) {
+      imageBytes = base64Decode(paket.gambarPaket);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: paket.imageUrl.isNotEmpty
-              ? Image.network(
-                  paket.imageUrl,
+          child: imageBytes != null
+              ? Image.memory(
+                  imageBytes,
                   width: double.infinity,
                   height: 88,
                   fit: BoxFit.cover,
-                  loadingBuilder: (_, child, progress) =>
-                      progress == null ? child : _placeholder(),
                   errorBuilder: (_, __, ___) => _placeholder(),
                 )
               : _placeholder(),
@@ -622,18 +587,15 @@ class _PaketCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    width: double.infinity,
-    height: 88,
-    decoration: BoxDecoration(
-      color: Colors.grey.shade200,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: const Icon(
-      Icons.image_not_supported_outlined,
-      color: Colors.grey,
-      size: 28,
-    ),
-  );
+        width: double.infinity,
+        height: 88,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(Icons.image_not_supported_outlined,
+            color: Colors.grey, size: 28),
+      );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -672,10 +634,8 @@ class _PlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text(
-        'Halaman $title',
-        style: const TextStyle(fontSize: 18, color: Colors.black54),
-      ),
+      child: Text('Halaman $title',
+          style: const TextStyle(fontSize: 18, color: Colors.black54)),
     );
   }
 }
