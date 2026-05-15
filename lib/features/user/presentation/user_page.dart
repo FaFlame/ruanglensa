@@ -49,25 +49,11 @@ class _UserPageState extends State<UserPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Logo + judul halaman ──────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset('assets/images/logo.png', width: 120),
-                      if (_pageTitles[_selectedIndex].isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          _pageTitles[_selectedIndex],
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ],
+                if (_selectedIndex == 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                    child: Image.asset('assets/images/logo.png', width: 120),
                   ),
-                ),
                 Expanded(
                   child: IndexedStack(index: _selectedIndex, children: _pages),
                 ),
@@ -298,10 +284,22 @@ class _HomePageState extends State<_HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildCategory('Kamera', 'assets/images/kategorilogokamera.png'),
-                  _buildCategory('Lensa', 'assets/images/kategorilogolensa.png'),
-                  _buildCategory('Paket', 'assets/images/kategorilogopaket.png'),
-                  _buildCategory('Semua', 'assets/images/kategorilogosemua.png'),
+                  _buildCategory(
+                    'Kamera',
+                    'assets/images/kategorilogokamera.png',
+                  ),
+                  _buildCategory(
+                    'Lensa',
+                    'assets/images/kategorilogolensa.png',
+                  ),
+                  _buildCategory(
+                    'Paket',
+                    'assets/images/kategorilogopaket.png',
+                  ),
+                  _buildCategory(
+                    'Semua',
+                    'assets/images/kategorilogosemua.png',
+                  ),
                 ],
               ),
             ),
@@ -503,12 +501,12 @@ class _HomePageState extends State<_HomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
-            child:
-            Image.asset(
+            child: Image.asset(
               imageAsset,
               width: 38,
               height: 38,
-              fit: BoxFit.contain),
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(height: 1),
           Text(
