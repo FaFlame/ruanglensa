@@ -46,7 +46,7 @@ class _AdminPageState extends State<AdminPage> {
             right: 0,
             child: Center(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(10),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                   child: Container(
@@ -54,7 +54,7 @@ class _AdminPageState extends State<AdminPage> {
                     height: 69,
                     decoration: BoxDecoration(
                       color: const Color(0xFF1C1C1E).withOpacity(0.75),
-                      borderRadius: BorderRadius.circular(40),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -69,11 +69,11 @@ class _AdminPageState extends State<AdminPage> {
                             duration: const Duration(milliseconds: 220),
                             curve: Curves.easeInOut,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                                horizontal: 29, vertical: 8),
                             decoration: isActive
                                 ? BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(28),
+                                    borderRadius: BorderRadius.circular(10),
                                   )
                                 : null,
                             child: Column(
@@ -109,7 +109,7 @@ class _AdminPageState extends State<AdminPage> {
 
   static const _navItems = [
     _NavItem(icon: Icons.home_rounded,           label: 'Beranda'),
-    _NavItem(icon: Icons.receipt_long_rounded,   label: 'Order'),
+    _NavItem(icon: Icons.receipt_rounded,   label: 'Order'),
     _NavItem(icon: Icons.add_circle_rounded,     label: 'Tambah'),
     _NavItem(icon: Icons.person_rounded,         label: 'Profile'),
   ];

@@ -312,7 +312,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             Center(
               child: Column(
                 children: [
-                  Image.asset('assets/images/logo.png', width: 100),
+                  Image.asset('assets/images/logo.png', width: 150),
                   const SizedBox(height: 6),
                   const Text('©2026 - ruang lensa',
                       style: TextStyle(
