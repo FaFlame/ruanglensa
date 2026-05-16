@@ -36,8 +36,6 @@ class ProdukService {
     final snapshot = await _db
         .collection('produk')
         .where('status_produk', isEqualTo: 'Tersedia')
-        .where('kategori_produk', whereNotIn: ['Aksesori'])
-        .orderBy('kategori_produk')
         .orderBy('created_at', descending: true)
         .limit(9)
         .get();
