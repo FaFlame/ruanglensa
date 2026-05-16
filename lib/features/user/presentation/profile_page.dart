@@ -5,8 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_info_page.dart';
 import 'user_level_page.dart';
 // import 'keranjang_page.dart';
-// import 'histori_pesanan_page.dart';
-// import 'disukai_page.dart';
+import 'histori_pesanan_page.dart';
+import 'disukai_page.dart';
 import '../../auth/presentation/login_page.dart';
 import '../../onboarding/splash_screen.dart';
 
@@ -390,13 +390,19 @@ class _ProfilePageState extends State<ProfilePage> {
               _shortcutBtn(
                 icon: Icons.history_rounded,
                 label: 'Histori Pesanan',
-                onTap: () {},
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HistoriPesananPage()),
+                ),
               ),
               const SizedBox(width: 10),
               _shortcutBtn(
                 icon: Icons.favorite_border_rounded,
                 label: 'Disukai',
-                onTap: () {},
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DisukaiPage()),
+                ),
               ),
             ],
           ),

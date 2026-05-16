@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:ruanglensa/features/user/presentation/profile_page.dart';
 import 'package:ruanglensa/features/user/presentation/search_page.dart';
+import 'package:ruanglensa/features/user/presentation/detail_produk_page.dart';
 import 'dart:ui';
 
 import 'produk_model.dart';
@@ -517,7 +518,14 @@ class _ProdukCard extends StatelessWidget {
       imageBytes = base64Decode(produk.gambarProduk);
     }
 
-    return Column(
+    return GestureDetector(
+      onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DetailProdukPage(produkId: produk.id),
+    ),
+  ),
+  child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
@@ -545,6 +553,7 @@ class _ProdukCard extends StatelessWidget {
           style: const TextStyle(fontSize: 11, color: Colors.grey),
         ),
       ],
+    ),
     );
   }
 
@@ -563,6 +572,7 @@ class _ProdukCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Card untuk koleksi "paket" (Paket Jasa)
 // ─────────────────────────────────────────────────────────────────────────────
+
 class _PaketCard extends StatelessWidget {
   final Paket paket;
   const _PaketCard({required this.paket});
@@ -574,34 +584,42 @@ class _PaketCard extends StatelessWidget {
       imageBytes = base64Decode(paket.gambarPaket);
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: imageBytes != null
-              ? Image.memory(
-                  imageBytes,
-                  width: double.infinity,
-                  height: 88,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _placeholder(),
-                )
-              : _placeholder(),
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DetailProdukPage(produkId: paket.id),
         ),
-        const SizedBox(height: 6),
-        Text(
-          paket.namaPaket,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          paket.hargaFormatted,
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
-        ),
-      ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: imageBytes != null
+                ? Image.memory(
+                    imageBytes,
+                    width: double.infinity,
+                    height: 88,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _placeholder(),
+                  )
+                : _placeholder(),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            paket.namaPaket,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            paket.hargaFormatted,
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 
