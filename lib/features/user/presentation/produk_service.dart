@@ -36,8 +36,23 @@ class ProdukService {
     final snapshot = await _db
         .collection('produk')
         .where('status_produk', isEqualTo: 'Tersedia')
+        //     .where('kategori_produk', whereIn: ['Kamera', 'Lensa'])
+        //     .orderBy('kategori_produk') 
         .orderBy('created_at', descending: true)
         .limit(9)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => Produk.fromFirestore(doc.data(), doc.id))
+        .toList();
+  }
+
+  // Ambil semua produk (Kamera + Lensa) yang tersedia tanpa limit
+  Future<List<Produk>> fetchSemuaProduk() async {
+    final snapshot = await _db
+        .collection('produk')
+        .where('status_produk', isEqualTo: 'Tersedia')
+        .orderBy('created_at', descending: true)
         .get();
 
     return snapshot.docs

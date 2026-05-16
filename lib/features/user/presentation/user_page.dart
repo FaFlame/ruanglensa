@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:ruanglensa/features/user/presentation/profile_page.dart';
 import 'package:ruanglensa/features/user/presentation/search_page.dart';
+import 'package:ruanglensa/features/user/presentation/kategori_page.dart';
 import 'package:ruanglensa/features/user/presentation/detail_produk_page.dart';
 import 'dart:ui';
 
@@ -472,33 +473,46 @@ Padding(
   }
 
   Widget _buildCategory(String label, String imageAsset) {
-    return Container(
-      width: 95,
-      height: 96,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child:
-            Image.asset(
-              imageAsset,
-              width: 38,
-              height: 38,
-              fit: BoxFit.contain),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CategoryPage(
+              categoryName: label,
+              categoryImage: imageAsset,
+            ),
           ),
-          const SizedBox(height: 1),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-          ),
-        ],
+        );
+      },
+      child: Container(
+        width: 95,
+        height: 96,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child:
+              Image.asset(
+                imageAsset,
+                width: 38,
+                height: 38,
+                fit: BoxFit.contain),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -522,10 +536,10 @@ class _ProdukCard extends StatelessWidget {
       onTap: () => Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => DetailProdukPage(produkId: produk.id),
+      builder: (_) =>DetailProdukPage(produkId: produk.id),
     ),
   ),
-  child: Column(
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
@@ -553,7 +567,7 @@ class _ProdukCard extends StatelessWidget {
           style: const TextStyle(fontSize: 11, color: Colors.grey),
         ),
       ],
-    ),
+      ),
     );
   }
 
@@ -572,7 +586,6 @@ class _ProdukCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Card untuk koleksi "paket" (Paket Jasa)
 // ─────────────────────────────────────────────────────────────────────────────
-
 class _PaketCard extends StatelessWidget {
   final Paket paket;
   const _PaketCard({required this.paket});
@@ -584,41 +597,41 @@ class _PaketCard extends StatelessWidget {
       imageBytes = base64Decode(paket.gambarPaket);
     }
 
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DetailProdukPage(produkId: paket.id),
-        ),
-      ),
+   return GestureDetector(
+    onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) =>DetailProdukPage(produkId: paket.id),
+    ),
+  ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: imageBytes != null
-                ? Image.memory(
-                    imageBytes,
-                    width: double.infinity,
-                    height: 88,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(),
-                  )
-                : _placeholder(),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            paket.namaPaket,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            paket.hargaFormatted,
-            style: const TextStyle(fontSize: 11, color: Colors.grey),
-          ),
-        ],
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: imageBytes != null
+              ? Image.memory(
+                  imageBytes,
+                  width: double.infinity,
+                  height: 88,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _placeholder(),
+                )
+              : _placeholder(),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          paket.namaPaket,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          paket.hargaFormatted,
+          style: const TextStyle(fontSize: 11, color: Colors.grey),
+        ),
+      ],
       ),
     );
   }

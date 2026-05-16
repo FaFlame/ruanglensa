@@ -142,17 +142,17 @@ class _SearchPageState extends State<SearchPage> {
 
             // ── Search bar ─────────────────────────────────────────────
        Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16),
-  child: Container(
-    height: 48,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade300),
-    ),
-    child: Row(
-      children: [
-        // Search bar
+       padding: const EdgeInsets.symmetric(horizontal: 16),
+       child: Container(
+       height: 48,
+       decoration: BoxDecoration(
+       color: Colors.white,
+       borderRadius: BorderRadius.circular(12),
+       border: Border.all(color: Colors.grey.shade300),
+       ),
+     child: Row(
+       children: [
+         // Search bar
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
