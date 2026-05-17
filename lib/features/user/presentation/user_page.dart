@@ -597,6 +597,7 @@ class _PaketCard extends StatelessWidget {
       imageBytes = base64Decode(paket.gambarPaket);
     }
 
+// gdgeeth
    return GestureDetector(
     onTap: () => Navigator.push(
     context,
