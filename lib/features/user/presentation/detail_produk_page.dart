@@ -139,13 +139,20 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
     }
   }
 
-  ImageProvider? _getImage(String g) {
-    if (g.isEmpty) return null;
-    if (g.startsWith('data:image')) {
-      return MemoryImage(base64Decode(g.split(',').last));
-    }
-    return NetworkImage(g);
-  }
+   ImageProvider? _getImage(String g) {
+   if (g.isEmpty) return null;
+
+   if (g.startsWith('data:image')) {
+     final base64Str = g.split(',').last;
+     return MemoryImage(base64Decode(base64Str));
+   }
+
+   try {
+     return MemoryImage(base64Decode(g));
+   } catch (_) {
+     return NetworkImage(g);
+   }
+ }
 
   String _formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
