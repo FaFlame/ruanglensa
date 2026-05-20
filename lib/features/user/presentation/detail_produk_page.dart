@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'pemesanan_page.dart';
@@ -38,6 +39,16 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
         .collection(col)
         .doc(widget.produkId)
         .get();
+
+    // DEBUG: print which collection and document id we're loading
+    // helpful to see why paket opens as "Produk tidak ditemukan"
+    // (remove or guard in production)
+    // ignore: avoid_print--
+    //  print('DetailProdukPage._loadData -> col=$col id=${widget.produkId} exists=${doc.exists}');
+    // Guard with kDebugMode so this doesn't run in release builds--
+    // if (kDebugMode) {
+    //   debugPrint('DetailProdukPage._loadData -> col=$col id=${widget.produkId} exists=${doc.exists}');
+    // }
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     bool isDisukai = false;

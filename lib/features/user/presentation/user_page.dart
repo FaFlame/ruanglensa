@@ -603,7 +603,7 @@ class _PaketCard extends StatelessWidget {
     onTap: () => Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) =>DetailProdukPage(produkId: paket.id),
+      builder: (_) => DetailProdukPage(produkId: paket.id, isPaket: true),
     ),
   ),
       child: Column(
