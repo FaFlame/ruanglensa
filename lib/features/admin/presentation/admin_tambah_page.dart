@@ -5,9 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'admin_service.dart';
 
-// Pastikan tambahkan di pubspec.yaml:
-//   image_picker: ^1.x.x
-
 class AdminTambahPage extends StatefulWidget {
   const AdminTambahPage({super.key});
 
@@ -16,7 +13,6 @@ class AdminTambahPage extends StatefulWidget {
 }
 
 class _AdminTambahPageState extends State<AdminTambahPage> {
-  // Tab: 0 = Produk, 1 = Paket
   int _tabIndex = 0;
 
   @override
@@ -24,7 +20,6 @@ class _AdminTambahPageState extends State<AdminTambahPage> {
     return SafeArea(
       child: Column(
         children: [
-          // ── Header ───────────────────────────────────────────────────
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Align(
@@ -34,8 +29,6 @@ class _AdminTambahPageState extends State<AdminTambahPage> {
                       fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
-
-          // ── Tab Produk / Paket ────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -55,8 +48,6 @@ class _AdminTambahPageState extends State<AdminTambahPage> {
             ),
           ),
           const SizedBox(height: 12),
-
-          // ── Form ──────────────────────────────────────────────────────
           Expanded(
             child: _tabIndex == 0
                 ? const _FormProduk()
@@ -68,7 +59,6 @@ class _AdminTambahPageState extends State<AdminTambahPage> {
   }
 }
 
-// ── Tab button ─────────────────────────────────────────────────────────────
 class _TabButton extends StatelessWidget {
   final String label;
   final bool isActive;
@@ -112,19 +102,20 @@ class _FormProduk extends StatefulWidget {
 }
 
 class _FormProdukState extends State<_FormProduk> {
-  final _formKey  = GlobalKey<FormState>();
-  final _nama     = TextEditingController();
-  final _harga    = TextEditingController();
-  final _durasi   = TextEditingController();
+  final _formKey   = GlobalKey<FormState>();
+  final _nama      = TextEditingController();
+  final _harga     = TextEditingController();
+  final _durasi    = TextEditingController();
   final _deskripsi = TextEditingController();
-  final _kondisi  = TextEditingController();
+  final _kondisi   = TextEditingController();
 
   String _kategori = 'Kamera';
   String _status   = 'Tersedia';
   Uint8List? _imageBytes;
   bool _isLoading  = false;
 
-  final List<String> _kategoriOptions = ['Kamera', 'Lensa'];
+  // Kamera, Lensa, Aksesori (untuk add-on)
+  final List<String> _kategoriOptions = ['Kamera', 'Lensa', 'Aksesori'];
   final List<String> _statusOptions   = ['Tersedia', 'Tidak Tersedia'];
 
   @override
@@ -135,7 +126,12 @@ class _FormProdukState extends State<_FormProduk> {
   }
 
   Future<void> _pickImage() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 70,
+    );
     if (picked != null) {
       final bytes = await picked.readAsBytes();
       setState(() => _imageBytes = bytes);
@@ -163,7 +159,11 @@ class _FormProdukState extends State<_FormProduk> {
           const SnackBar(content: Text('Produk berhasil ditambahkan!')),
         );
         _formKey.currentState!.reset();
-        setState(() => _imageBytes = null);
+        setState(() {
+          _imageBytes = null;
+          _kategori   = 'Kamera';
+          _status     = 'Tersedia';
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -183,6 +183,7 @@ class _FormProdukState extends State<_FormProduk> {
       child: Form(
         key: _formKey,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Pilih gambar
             GestureDetector(
@@ -223,7 +224,6 @@ class _FormProdukState extends State<_FormProduk> {
             _Field(controller: _deskripsi, label: 'Deskripsi', maxLines: 3),
             _Field(controller: _kondisi,   label: 'Kondisi (0-100)', isNumber: true),
 
-            // Dropdown Kategori
             _Dropdown(
               label: 'Kategori',
               value: _kategori,
@@ -232,7 +232,32 @@ class _FormProdukState extends State<_FormProduk> {
             ),
             const SizedBox(height: 12),
 
-            // Dropdown Status
+            // Info Aksesori
+            if (_kategori == 'Aksesori')
+              Container(
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8E1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.amber.shade300),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 16, color: Colors.amber),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Produk Aksesori akan muncul sebagai Add-on di halaman pemesanan.',
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             _Dropdown(
               label: 'Status',
               value: _status,
@@ -241,7 +266,6 @@ class _FormProdukState extends State<_FormProduk> {
             ),
             const SizedBox(height: 20),
 
-            // Tombol simpan
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -255,7 +279,8 @@ class _FormProdukState extends State<_FormProduk> {
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text('Simpan Produk',
-                        style: TextStyle(color: Colors.white,
+                        style: TextStyle(
+                            color: Colors.white,
                             fontWeight: FontWeight.w600)),
               ),
             ),
@@ -282,12 +307,13 @@ class _FormPaketState extends State<_FormPaket> {
   final _harga     = TextEditingController();
   final _deskripsi = TextEditingController();
 
-  final String _kategori = 'Paket Jasa';
+  String _kategori = 'Paket Jasa';
   String _status   = 'Tersedia';
   Uint8List? _imageBytes;
   bool _isLoading  = false;
 
-  final List<String> _statusOptions = ['Tersedia', 'Tidak Tersedia'];
+  final List<String> _kategoriOptions = ['Paket Jasa', 'Paket Alat'];
+  final List<String> _statusOptions   = ['Tersedia', 'Tidak Tersedia'];
 
   @override
   void dispose() {
@@ -296,7 +322,12 @@ class _FormPaketState extends State<_FormPaket> {
   }
 
   Future<void> _pickImage() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 70,
+    );
     if (picked != null) {
       final bytes = await picked.readAsBytes();
       setState(() => _imageBytes = bytes);
@@ -322,7 +353,11 @@ class _FormPaketState extends State<_FormPaket> {
           const SnackBar(content: Text('Paket berhasil ditambahkan!')),
         );
         _formKey.currentState!.reset();
-        setState(() => _imageBytes = null);
+        setState(() {
+          _imageBytes = null;
+          _kategori   = 'Paket Jasa';
+          _status     = 'Tersedia';
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -342,6 +377,7 @@ class _FormPaketState extends State<_FormPaket> {
       child: Form(
         key: _formKey,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
               onTap: _pickImage,
@@ -380,6 +416,14 @@ class _FormPaketState extends State<_FormPaket> {
             _Field(controller: _deskripsi, label: 'Deskripsi', maxLines: 3),
 
             _Dropdown(
+              label: 'Kategori Paket',
+              value: _kategori,
+              items: _kategoriOptions,
+              onChanged: (v) => setState(() => _kategori = v!),
+            ),
+            const SizedBox(height: 12),
+
+            _Dropdown(
               label: 'Status',
               value: _status,
               items: _statusOptions,
@@ -400,7 +444,8 @@ class _FormPaketState extends State<_FormPaket> {
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text('Simpan Paket',
-                        style: TextStyle(color: Colors.white,
+                        style: TextStyle(
+                            color: Colors.white,
                             fontWeight: FontWeight.w600)),
               ),
             ),
@@ -437,12 +482,14 @@ class _Field extends StatelessWidget {
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          border:
+              OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
-        validator: (v) =>
-            v == null || v.trim().isEmpty ? '$label tidak boleh kosong' : null,
+        validator: (v) => v == null || v.trim().isEmpty
+            ? '$label tidak boleh kosong'
+            : null,
       ),
     );
   }
@@ -464,10 +511,11 @@ class _Dropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      initialValue: value,
+      value: value,
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),

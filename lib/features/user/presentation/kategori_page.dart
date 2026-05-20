@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'produk_model.dart';
 import 'produk_service.dart';
+import 'detail_produk_page.dart';
 
 class CategoryPage extends StatefulWidget {
   final String categoryName;
@@ -136,9 +137,10 @@ class _CategoryPageState extends State<CategoryPage> {
                     }
 
                     final produkList = _filterProduk(snapshot.data ?? []);
-                    
+
                     // Jika ada paket juga, tampilkan header
-                    if (widget.categoryName == 'Semua' && produkList.isNotEmpty) {
+                    if (widget.categoryName == 'Semua' &&
+                        produkList.isNotEmpty) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -154,14 +156,17 @@ class _CategoryPageState extends State<CategoryPage> {
                           const SizedBox(height: 24),
                         ],
                       );
-
-                    } else if (produkList.isEmpty && widget.categoryName != 'Semua') {
+                    } else if (produkList.isEmpty &&
+                        widget.categoryName != 'Semua') {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.shopping_bag_outlined,
-                                size: 64, color: Colors.grey.shade400),
+                            Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 64,
+                              color: Colors.grey.shade400,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'Belum ada produk di kategori ini',
@@ -174,13 +179,14 @@ class _CategoryPageState extends State<CategoryPage> {
                         ),
                       );
                     }
-                    
+
                     return _buildProdukGrid(produkList);
                   },
                 ),
 
               // ── Section Paket (hanya untuk Paket atau Semua) ─────────────
-              if (widget.categoryName == 'Paket' || widget.categoryName == 'Semua')
+              if (widget.categoryName == 'Paket' ||
+                  widget.categoryName == 'Semua')
                 FutureBuilder<List<Paket>>(
                   future: _paketFuture,
                   builder: (context, snapshot) {
@@ -201,16 +207,17 @@ class _CategoryPageState extends State<CategoryPage> {
 
                     final paketList = _filterPaket(snapshot.data ?? []);
 
-                    
-
                     // Empty state untuk kategori Paket saja
                     if (paketList.isEmpty && widget.categoryName == 'Paket') {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.shopping_bag_outlined,
-                                size: 64, color: Colors.grey.shade400),
+                            Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 64,
+                              color: Colors.grey.shade400,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'Belum ada paket di kategori ini',
@@ -265,9 +272,7 @@ class _CategoryPageState extends State<CategoryPage> {
       mainAxisSpacing: 14,
       crossAxisSpacing: 10,
       childAspectRatio: 0.78,
-      children: produkList
-          .map((p) => _ProdukCardCategory(produk: p))
-          .toList(),
+      children: produkList.map((p) => _ProdukCardCategory(produk: p)).toList(),
     );
   }
 
@@ -279,9 +284,7 @@ class _CategoryPageState extends State<CategoryPage> {
       mainAxisSpacing: 14,
       crossAxisSpacing: 10,
       childAspectRatio: 0.78,
-      children: paketList
-          .map((p) => _PaketCardCategory(paket: p))
-          .toList(),
+      children: paketList.map((p) => _PaketCardCategory(paket: p)).toList(),
     );
   }
 
@@ -377,16 +380,12 @@ class _ProdukCardCategory extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        // Anda bisa menambahkan aksi ketika kartu produk diklik
-        // Misalnya navigasi ke halaman detail produk
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${produk.namaProduk} diklik'),
-            duration: const Duration(seconds: 1),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DetailProdukPage(produkId: produk.id),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -420,15 +419,18 @@ class _ProdukCardCategory extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        width: double.infinity,
-        height: 88,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Icon(Icons.image_not_supported_outlined,
-            color: Colors.grey, size: 28),
-      );
+    width: double.infinity,
+    height: 88,
+    decoration: BoxDecoration(
+      color: Colors.grey.shade200,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: const Icon(
+      Icons.image_not_supported_outlined,
+      color: Colors.grey,
+      size: 28,
+    ),
+  );
 }
 
 class _PaketCardCategory extends StatelessWidget {
@@ -443,14 +445,12 @@ class _PaketCardCategory extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${paket.namaPaket} diklik'),
-            duration: const Duration(seconds: 1),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DetailProdukPage(produkId: paket.id, isPaket: true),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -484,15 +484,18 @@ class _PaketCardCategory extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        width: double.infinity,
-        height: 88,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Icon(Icons.image_not_supported_outlined,
-            color: Colors.grey, size: 28),
-      );
+    width: double.infinity,
+    height: 88,
+    decoration: BoxDecoration(
+      color: Colors.grey.shade200,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: const Icon(
+      Icons.image_not_supported_outlined,
+      color: Colors.grey,
+      size: 28,
+    ),
+  );
 }
 
 class _SkeletonCard extends StatelessWidget {

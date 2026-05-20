@@ -22,7 +22,7 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
   Map<String, dynamic>? _data;
   bool _isLoading = true;
   bool _isDisukai = false;
-  int  _jumlahDisukai = 0;
+  int _jumlahDisukai = 0;
   String? _disukaiDocId;
 
   @override
@@ -34,16 +34,10 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
   Future<void> _loadData() async {
     final col = widget.isPaket ? 'paket' : 'produk';
 
-    print('Loading dari koleksi: $col');
-    print('produkId: ${widget.produkId}');
-
     final doc = await FirebaseFirestore.instance
         .collection(col)
         .doc(widget.produkId)
         .get();
-
-    print('doc.exists: ${doc.exists}');
-    print('doc.data: ${doc.data()}');
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     bool isDisukai = false;
@@ -57,7 +51,7 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
           .limit(1)
           .get();
       if (snap.docs.isNotEmpty) {
-        isDisukai    = true;
+        isDisukai = true;
         disukaiDocId = snap.docs.first.id;
       }
     }
@@ -70,11 +64,11 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
 
     if (mounted) {
       setState(() {
-        _data          = doc.data();
-        _isDisukai     = isDisukai;
-        _disukaiDocId  = disukaiDocId;
+        _data = doc.data();
+        _isDisukai = isDisukai;
+        _disukaiDocId = disukaiDocId;
         _jumlahDisukai = countSnap.count ?? 0;
-        _isLoading     = false;
+        _isLoading = false;
       });
     }
   }
@@ -89,21 +83,21 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
           .doc(_disukaiDocId)
           .delete();
       setState(() {
-        _isDisukai     = false;
-        _disukaiDocId  = null;
+        _isDisukai = false;
+        _disukaiDocId = null;
         _jumlahDisukai = (_jumlahDisukai - 1).clamp(0, 999999);
       });
     } else {
       final ref = await FirebaseFirestore.instance
           .collection('pesanan_disukai')
           .add({
-        'user_id'   : uid,
-        'produk_id' : widget.produkId,
-        'created_at': FieldValue.serverTimestamp(),
-      });
+            'user_id': uid,
+            'produk_id': widget.produkId,
+            'created_at': FieldValue.serverTimestamp(),
+          });
       setState(() {
-        _isDisukai     = true;
-        _disukaiDocId  = ref.id;
+        _isDisukai = true;
+        _disukaiDocId = ref.id;
         _jumlahDisukai = _jumlahDisukai + 1;
       });
     }
@@ -130,8 +124,8 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
     }
 
     await FirebaseFirestore.instance.collection('keranjang').add({
-      'user_id'   : uid,
-      'produk_id' : widget.produkId,
+      'user_id': uid,
+      'produk_id': widget.produkId,
       'created_at': FieldValue.serverTimestamp(),
     });
 
@@ -163,9 +157,7 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_data == null) {
@@ -174,19 +166,36 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
       );
     }
 
-    final d             = _data!;
-    final isPaket       = widget.isPaket;
-    final nama          = isPaket ? (d['nama_paket'] ?? '') : (d['nama_produk'] ?? '');
-    final harga         = isPaket ? (d['harga_paket'] ?? 0) as int : (d['harga_sewa'] ?? 0) as int;
-    final durasi        = isPaket ? null : (d['durasi_sewa'] ?? 7) as int;
-    final deskripsi     = isPaket ? (d['deskripsi_paket'] ?? '') : (d['deskripsi_produk'] ?? '');
-    final kondisi       = isPaket ? null : (d['kondisi_produk'] ?? 0) as int;
-    final status        = isPaket ? (d['status_paket'] ?? '') : (d['status_produk'] ?? '');
-    final gambar        = isPaket ? (d['gambar_paket'] ?? '') : (d['gambar_produk'] ?? '');
+    final d = _data!;
+    final isPaket = widget.isPaket;
+    final nama = isPaket ? (d['nama_paket'] ?? '') : (d['nama_produk'] ?? '');
+    final harga =
+        int.tryParse(
+          (isPaket ? d['harga_paket'] : d['harga_sewa'])?.toString() ?? '0',
+        ) ??
+        0;
+    final durasi = isPaket
+        ? null
+        : int.tryParse((d['durasi_sewa'])?.toString() ?? '7') ?? 7;
+    final deskripsi = isPaket
+        ? (d['deskripsi_paket'] ?? '')
+        : (d['deskripsi_produk'] ?? '');
+    final kondisi = isPaket
+        ? null
+        : int.tryParse((d['kondisi_produk'])?.toString() ?? '0') ?? 0;
+    final status = isPaket
+        ? (d['status_paket'] ?? '')
+        : (d['status_produk'] ?? '');
+    final gambar = isPaket
+        ? (d['gambar_paket'] ?? '')
+        : (d['gambar_produk'] ?? '');
     final imageProvider = _getImage(gambar);
 
+    final kategoriPaket = d['kategori_paket'] as String? ?? '';
     final hargaStr = isPaket
-        ? 'Rp. ${_formatHarga(harga)}/paket'
+        ? (kategoriPaket == 'Paket Jasa'
+              ? 'Rp. ${_formatHarga(harga)}/hari'
+              : 'Rp. ${_formatHarga(harga)}/7 hari')
         : 'Rp. ${_formatHarga(harga)}/hari';
 
     return Scaffold(
@@ -198,9 +207,10 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
         title: Text(
           isPaket ? 'Paket' : 'Produk',
           style: const TextStyle(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w600),
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: true,
       ),
@@ -248,15 +258,21 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(nama,
-                                style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold)),
+                            Text(
+                              nama,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text(hargaStr,
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54)),
+                            Text(
+                              hargaStr,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -264,7 +280,9 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
                       // Badge status
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: status == 'Tersedia'
                               ? const Color(0xFFE8F5E9)
@@ -314,8 +332,8 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
                           label: kondisi >= 90
                               ? '4.8'
                               : kondisi >= 70
-                                  ? '4.0'
-                                  : '3.5',
+                              ? '4.0'
+                              : '3.5',
                         ),
                         const SizedBox(width: 8),
                         _chip(
@@ -352,11 +370,14 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(deskripsi,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.black87,
-                          height: 1.5)),
+                  Text(
+                    deskripsi,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      height: 1.5,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -390,8 +411,10 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.shopping_cart_outlined,
-                    color: Color(0xFF021427)),
+                child: const Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Color(0xFF021427),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -404,11 +427,11 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => PemesananPage(
-                              produkId : widget.produkId,
-                              isPaket  : widget.isPaket,
+                              produkId: widget.produkId,
+                              isPaket: widget.isPaket,
                               produkData: _data!,
                               jumlahDisukai: _jumlahDisukai,
-                              kondisi  : kondisi ?? 0,
+                              kondisi: kondisi ?? 0,
                             ),
                           ),
                         );
@@ -421,11 +444,14 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Sewa sekarang',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600)),
+                child: const Text(
+                  'Sewa sekarang',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],
@@ -452,8 +478,10 @@ class _DetailProdukPageState extends State<DetailProdukPage> {
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
-          Text(label,
-              style: const TextStyle(fontSize: 12, color: Colors.black87)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Colors.black87),
+          ),
         ],
       ),
     );
