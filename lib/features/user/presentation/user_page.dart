@@ -7,6 +7,7 @@ import 'package:ruanglensa/features/user/presentation/profile_page.dart';
 import 'package:ruanglensa/features/user/presentation/search_page.dart';
 import 'package:ruanglensa/features/user/presentation/kategori_page.dart';
 import 'package:ruanglensa/features/user/presentation/detail_produk_page.dart';
+import 'package:ruanglensa/features/user/presentation/status_sewa_page.dart';
 import 'dart:ui';
 
 import 'produk_model.dart';
@@ -28,7 +29,7 @@ class _UserPageState extends State<UserPage> {
 
    late final List<Widget> _pages = [
     const _HomePage(),
-    const _PlaceholderPage('Status Sewa'), // ganti: StatusSewaPage()
+    const StatusSewaPage(), // ganti: StatusSewaPage()
     const ProfilePage(), // ganti: PenggunaPage()
   ];
 

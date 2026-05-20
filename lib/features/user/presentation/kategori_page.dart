@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'produk_model.dart';
 import 'produk_service.dart';
+import 'detail_produk_page.dart';
 
 class CategoryPage extends StatefulWidget {
   final String categoryName;
@@ -378,12 +379,12 @@ class _ProdukCardCategory extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        // Anda bisa menambahkan aksi ketika kartu produk diklik
-        // Misalnya navigasi ke halaman detail produk
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${produk.namaProduk} diklik'),
-            duration: const Duration(seconds: 1),
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => DetailProdukPage(
+              produkId: produk.id,
+              isPaket: false,
+            ),
           ),
         );
       },
@@ -444,10 +445,12 @@ class _PaketCardCategory extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${paket.namaPaket} diklik'),
-            duration: const Duration(seconds: 1),
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => DetailProdukPage(
+              produkId: paket.id,
+              isPaket: true,
+            ),
           ),
         );
       },
